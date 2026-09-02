@@ -6,6 +6,14 @@
 export type UniversityStatus = "active" | "coming_soon";
 export type UserRole = "student" | "moderator" | "admin";
 export type UserStatus = "active" | "suspended" | "banned";
+export type ReactionTargetType = "post" | "comment";
+export type ReactionType = "like" | "upvote" | "downvote";
+export type CommunityType = "public" | "restricted";
+export type CommunityMemberRole = "member" | "mod" | "owner";
+export type ListingCategory =
+  "textbooks" | "electronics" | "furniture" | "clothing" | "tickets" | "housing" | "other";
+export type ListingCondition = "new" | "like_new" | "good" | "fair" | "poor";
+export type ListingStatus = "active" | "sold" | "removed";
 
 export interface Database {
   public: {
@@ -34,6 +42,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["universities"]["Insert"]>;
+        Relationships: [];
       };
       users: {
         Row: {
@@ -69,6 +78,353 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "users_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: false;
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          id: string;
+          university_id: string;
+          author_id: string;
+          community_id: string | null;
+          body: string;
+          like_count: number;
+          comment_count: number;
+          created_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          author_id: string;
+          community_id?: string | null;
+          body: string;
+          like_count?: number;
+          comment_count?: number;
+          created_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["posts"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_community_id_fkey";
+            columns: ["community_id"];
+            isOneToOne: false;
+            referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_media: {
+        Row: {
+          id: string;
+          post_id: string;
+          url: string;
+          type: "image";
+          position: number;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          url: string;
+          type?: "image";
+          position?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["post_media"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "post_media_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          parent_comment_id: string | null;
+          author_id: string;
+          body: string;
+          created_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          parent_comment_id?: string | null;
+          author_id: string;
+          body: string;
+          created_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["comments"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reactions: {
+        Row: {
+          id: string;
+          target_type: ReactionTargetType;
+          target_id: string;
+          user_id: string;
+          type: ReactionType;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          target_type: ReactionTargetType;
+          target_id: string;
+          user_id: string;
+          type: ReactionType;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reactions"]["Insert"]>;
+        Relationships: [];
+      };
+      communities: {
+        Row: {
+          id: string;
+          university_id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          type: CommunityType;
+          member_count: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          slug: string;
+          name: string;
+          description?: string | null;
+          type?: CommunityType;
+          member_count?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["communities"]["Insert"]>;
+        Relationships: [];
+      };
+      community_members: {
+        Row: {
+          community_id: string;
+          user_id: string;
+          role: CommunityMemberRole;
+          joined_at: string;
+        };
+        Insert: {
+          community_id: string;
+          user_id: string;
+          role?: CommunityMemberRole;
+          joined_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["community_members"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey";
+            columns: ["community_id"];
+            isOneToOne: false;
+            referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      conversations: {
+        Row: {
+          id: string;
+          university_id: string;
+          type: "dm" | "marketplace";
+          listing_id: string | null;
+          last_message_at: string | null;
+          last_message_body: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          type?: "dm" | "marketplace";
+          listing_id?: string | null;
+          last_message_at?: string | null;
+          last_message_body?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["conversations"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "conversations_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      conversation_participants: {
+        Row: {
+          conversation_id: string;
+          user_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["conversation_participants"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversation_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          body: string;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_id: string;
+          body: string;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      listings: {
+        Row: {
+          id: string;
+          university_id: string;
+          seller_id: string;
+          title: string;
+          description: string;
+          price_cents: number;
+          category: ListingCategory;
+          condition: ListingCondition;
+          status: ListingStatus;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          seller_id: string;
+          title: string;
+          description: string;
+          price_cents: number;
+          category: ListingCategory;
+          condition: ListingCondition;
+          status?: ListingStatus;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["listings"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "listings_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      listing_media: {
+        Row: {
+          id: string;
+          listing_id: string;
+          url: string;
+          position: number;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          url: string;
+          position?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["listing_media"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "listing_media_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      resolve_university_for_email: {
+        Args: { p_email: string };
+        Returns: Database["public"]["Tables"]["universities"]["Row"] | null;
+      };
+      start_dm_conversation: {
+        Args: { p_other_user_id: string };
+        Returns: string;
+      };
+      start_marketplace_conversation: {
+        Args: { p_listing_id: string };
+        Returns: string;
+      };
+      is_username_available: {
+        Args: { p_username: string };
+        Returns: boolean;
       };
     };
   };
