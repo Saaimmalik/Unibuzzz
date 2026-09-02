@@ -86,7 +86,7 @@ export function MarketplacePage() {
         <button
           type="button"
           onClick={() => setIsCreating((v) => !v)}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-orange"
+          className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-black hover:bg-brand-orange"
         >
           <Plus size={16} />
           Sell something
@@ -210,7 +210,7 @@ export function MarketplacePage() {
           <button
             type="button"
             onClick={() => setCategory(undefined)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-brand-ink" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
           >
             All
           </button>
@@ -219,7 +219,7 @@ export function MarketplacePage() {
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-brand-ink" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
             >
               {CATEGORY_LABELS[c]}
             </button>

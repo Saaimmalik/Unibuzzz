@@ -20,6 +20,36 @@
   color-scheme: light;
 }
 
+/*
+ * Dark mode works by remapping Tailwind's own neutral-palette CSS variables
+ * (white, stone-50..600) plus --color-brand-ink under a `.dark` class on
+ * <html> — NOT via per-component `dark:` variants. Nearly every page in
+ * this app already composes its look from just these tokens (bg-white
+ * cards, bg-stone-50 page background, border-stone-200, text-stone-400/500,
+ * text-brand-ink body text), so overriding the tokens themselves re-themes
+ * the whole app for free. The `dark` class is applied by ThemeProvider
+ * (apps/web/src/lib/ThemeProvider.tsx) based on the user's stored
+ * light/dark/system preference.
+ *
+ * The one deliberate exception: text-brand-ink is also used as the label
+ * color on solid brand-yellow/brand-orange buttons, where it must stay
+ * dark regardless of theme (yellow needs dark text for contrast) — those
+ * specific spots use `text-black` (a plain, non-remapped Tailwind utility)
+ * instead of `text-brand-ink`, so they're unaffected by this remap.
+ */
+.dark {
+  color-scheme: dark;
+  --color-white: #18181b;
+  --color-stone-50: #0a0a0a;
+  --color-stone-100: #1c1c1f;
+  --color-stone-200: #2a2a2e;
+  --color-stone-300: #3f3f46;
+  --color-stone-400: #71717a;
+  --color-stone-500: #a1a1aa;
+  --color-stone-600: #d4d4d8;
+  --color-brand-ink: #f4f4f5;
+}
+
 body {
   background: var(--color-stone-50);
   color: var(--color-brand-ink);

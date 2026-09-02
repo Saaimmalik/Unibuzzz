@@ -1,5 +1,4 @@
 import type { Community, CommunityWithMembership } from "@unibuzzz/shared";
-import { slugify } from "@unibuzzz/shared";
 import { toIlikePattern } from "../../lib/search";
 import { supabase } from "../../lib/supabase";
 
@@ -61,41 +60,31 @@ export async function fetchCommunityBySlug(
   return withRole;
 }
 
+// Community creation now goes through the same admin-approval queue as
+// professor/course suggestions (entity_submissions, type='community') — see
+// supabase/migrations/20260902280500_entity_submissions_communities.sql.
+// The real communities row (and its slug) is only created once an admin
+// approves the request via admin_review_entity_submission.
 export async function createCommunity({
   universityId,
-  createdBy,
+  submittedBy,
   name,
   description,
   type,
 }: {
   universityId: string;
-  createdBy: string;
+  submittedBy: string;
   name: string;
   description: string;
   type: "public" | "restricted";
-}): Promise<Community> {
-  const baseSlug = slugify(name) || "community";
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const slug = attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`;
-    const { data, error } = await supabase
-      .from("communities")
-      .insert({
-        university_id: universityId,
-        created_by: createdBy,
-        name,
-        description: description || null,
-        type,
-        slug,
-      })
-      .select()
-      .single();
-
-    if (!error) return data;
-    if (error.code !== "23505") throw error; // not a slug conflict — give up
-  }
-
-  throw new Error("Couldn't find an available name for this community. Try a more distinct name.");
+}): Promise<void> {
+  const { error } = await supabase.from("entity_submissions").insert({
+    university_id: universityId,
+    submitted_by: submittedBy,
+    type: "community",
+    payload: { name, description: description || null, type },
+  });
+  if (error) throw error;
 }
 
 export async function joinCommunity(communityId: string, userId: string): Promise<void> {

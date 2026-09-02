@@ -49,7 +49,7 @@ export function MessagesPage() {
                 </p>
               </div>
               {conversation.unread_count > 0 && (
-                <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-yellow px-1.5 text-xs font-bold text-brand-ink">
+                <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-yellow px-1.5 text-xs font-bold text-black">
                   {conversation.unread_count}
                 </span>
               )}

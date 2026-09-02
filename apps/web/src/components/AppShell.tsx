@@ -1,4 +1,5 @@
-import { Bell, Home, MessageCircle, Search, ShoppingBag, Star, User, Users } from "lucide-react";
+import { isStaffRole } from "@unibuzzz/shared";
+import { Bell, Home, MessageCircle, Search, Shield, ShoppingBag, Star, User, Users } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 
@@ -22,6 +23,7 @@ function navLinkClasses(isActive: boolean) {
 
 export function AppShell() {
   const { appUser, signOut } = useAuth();
+  const isStaff = isStaffRole(appUser?.role);
 
   return (
     <div className="flex min-h-dvh flex-col bg-stone-50 md:flex-row">
@@ -47,6 +49,15 @@ export function AppShell() {
             >
               <MessageCircle size={20} />
             </NavLink>
+            {isStaff && (
+              <NavLink
+                to="/admin"
+                className="rounded-full p-1.5 text-stone-500 hover:bg-brand-purple/10 hover:text-brand-purple"
+                aria-label="Admin mode"
+              >
+                <Shield size={20} />
+              </NavLink>
+            )}
           </div>
         </div>
 
@@ -107,6 +118,15 @@ export function AppShell() {
           >
             <User size={22} />
           </NavLink>
+          {isStaff && (
+            <NavLink
+              to="/admin"
+              className="rounded-full p-2 text-stone-500 hover:bg-brand-purple/10 hover:text-brand-purple"
+              aria-label="Admin mode"
+            >
+              <Shield size={22} />
+            </NavLink>
+          )}
           <button
             type="button"
             onClick={() => void signOut()}

@@ -1,8 +1,10 @@
-import { Lock, Users } from "lucide-react";
+import { Flag, Lock, Users } from "lucide-react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { PostCard } from "../features/feed/PostCard";
 import { PostComposer } from "../features/feed/PostComposer";
 import { communityPostsQueryKey } from "../features/feed/api";
+import { ReportDialog } from "../features/reports/ReportDialog";
 import {
   useCommunity,
   useCommunityPosts,
@@ -16,6 +18,7 @@ export function CommunityPage() {
   const join = useJoinCommunity(slug ?? "");
   const leave = useLeaveCommunity(slug ?? "");
   const { data: posts, isLoading: postsLoading } = useCommunityPosts(community?.id ?? "");
+  const [showReport, setShowReport] = useState(false);
 
   if (communityLoading) return <p className="py-10 text-center text-sm text-stone-400">Loading…</p>;
   if (!community)
@@ -44,20 +47,38 @@ export function CommunityPage() {
               {community.member_count} {community.member_count === 1 ? "member" : "members"}
             </p>
           </div>
-          <button
-            type="button"
-            disabled={join.isPending || leave.isPending}
-            onClick={() => (isMember ? leave.mutate(community.id) : join.mutate(community.id))}
-            className={
-              isMember
-                ? "shrink-0 rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-semibold text-stone-600 hover:bg-stone-50"
-                : "shrink-0 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-orange"
-            }
-          >
-            {isMember ? "Leave" : "Join"}
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              disabled={join.isPending || leave.isPending}
+              onClick={() => (isMember ? leave.mutate(community.id) : join.mutate(community.id))}
+              className={
+                isMember
+                  ? "rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-semibold text-stone-600 hover:bg-stone-50"
+                  : "rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-black hover:bg-brand-orange"
+              }
+            >
+              {isMember ? "Leave" : "Join"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowReport(true)}
+              className="rounded-full p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              aria-label="Report community"
+            >
+              <Flag size={16} />
+            </button>
+          </div>
         </div>
       </div>
+
+      {showReport && (
+        <ReportDialog
+          targetType="community"
+          targetId={community.id}
+          onClose={() => setShowReport(false)}
+        />
+      )}
 
       {isMember && <PostComposer communityId={community.id} />}
       {!isMember && (

@@ -28,7 +28,7 @@ export async function updateProfile(
   updates: {
     display_name: string;
     bio: string | null;
-    major: string | null;
+    degree: string | null;
     grad_year: number | null;
     avatar_url?: string;
   },

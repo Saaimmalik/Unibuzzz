@@ -6,13 +6,16 @@ import "./index.css";
 import App from "./App.tsx";
 import { AuthProvider } from "./lib/AuthProvider.tsx";
 import { queryClient } from "./lib/queryClient.ts";
+import { ThemeProvider } from "./lib/ThemeProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

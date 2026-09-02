@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editProfileSchema, type EditProfileInput } from "@unibuzzz/shared";
-import { Camera, Pencil, UserPlus } from "lucide-react";
+import { editProfileSchema, type EditProfileInput, type ThemePreference } from "@unibuzzz/shared";
+import { Camera, Monitor, Moon, Pencil, Sun, UserPlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -8,9 +8,17 @@ import { Avatar } from "../components/Avatar";
 import { AuthField, authButtonClasses, authInputClasses } from "../components/AuthLayout";
 import { useUpdateProfile } from "../features/profile/hooks";
 import { useAuth } from "../lib/auth-context";
+import { useTheme } from "../lib/theme-context";
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
+];
 
 export function ProfilePage() {
   const { appUser } = useAuth();
+  const { preference, setPreference } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -28,7 +36,7 @@ export function ProfilePage() {
       ? {
           displayName: appUser.display_name,
           bio: appUser.bio ?? "",
-          major: appUser.major ?? "",
+          degree: appUser.degree ?? "",
           gradYear: appUser.grad_year ?? "",
         }
       : undefined,
@@ -47,7 +55,7 @@ export function ProfilePage() {
       await updateProfile.mutateAsync({
         displayName: values.displayName,
         bio: values.bio ?? "",
-        major: values.major ?? "",
+        degree: values.degree ?? "",
         gradYear: values.gradYear ?? "",
         avatar: avatarFile,
       });
@@ -74,7 +82,7 @@ export function ProfilePage() {
               avatarUrl={avatarPreview ?? appUser?.avatar_url}
               size="lg"
             />
-            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-yellow text-brand-ink">
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-yellow text-black">
               <Camera size={13} />
             </span>
           </button>
@@ -96,8 +104,8 @@ export function ProfilePage() {
             <textarea rows={3} className={authInputClasses} {...register("bio")} />
           </AuthField>
 
-          <AuthField label="Major" error={errors.major?.message}>
-            <input type="text" className={authInputClasses} {...register("major")} />
+          <AuthField label="Degree" error={errors.degree?.message}>
+            <input type="text" className={authInputClasses} {...register("degree")} />
           </AuthField>
 
           <AuthField label="Graduation year" error={errors.gradYear?.message}>
@@ -161,14 +169,39 @@ export function ProfilePage() {
           <dd className="font-medium text-brand-ink">{appUser?.email}</dd>
         </div>
         <div className="flex justify-between px-4 py-3 text-sm">
-          <dt className="text-stone-500">Major</dt>
-          <dd className="font-medium text-brand-ink">{appUser?.major ?? "—"}</dd>
+          <dt className="text-stone-500">Degree</dt>
+          <dd className="font-medium text-brand-ink">{appUser?.degree ?? "—"}</dd>
         </div>
         <div className="flex justify-between px-4 py-3 text-sm">
           <dt className="text-stone-500">Graduation year</dt>
           <dd className="font-medium text-brand-ink">{appUser?.grad_year ?? "—"}</dd>
         </div>
       </dl>
+
+      <div className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
+        <p className="text-sm font-semibold text-brand-ink">Appearance</p>
+        <p className="mt-0.5 text-xs text-stone-500">
+          Choose how UniBuzzz looks. Synced to your account across devices.
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPreference(value)}
+              aria-pressed={preference === value}
+              className={`flex flex-col items-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors ${
+                preference === value
+                  ? "border-brand-purple bg-brand-purple/10 text-brand-purple"
+                  : "border-stone-200 text-stone-500 hover:bg-stone-50"
+              }`}
+            >
+              <Icon size={18} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <Link
         to="/signup"

@@ -10,7 +10,7 @@ export const editProfileSchema = z.object({
     .max(280, "Bio must be at most 280 characters")
     .optional()
     .or(z.literal("")),
-  major: z.string().trim().max(80, "That's a bit long").optional().or(z.literal("")),
+  degree: z.string().trim().max(80, "That's a bit long").optional().or(z.literal("")),
   gradYear: z.coerce
     .number()
     .int()

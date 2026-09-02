@@ -1,18 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createCommunitySchema, type CreateCommunityInput } from "@unibuzzz/shared";
-import { Lock, Plus, Users } from "lucide-react";
+import { CheckCircle2, Lock, Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthField, authButtonClasses, authInputClasses } from "../components/AuthLayout";
 import { useCommunities, useCreateCommunity } from "../features/communities/hooks";
 
 export function CommunitiesPage() {
-  const navigate = useNavigate();
   const { data: communities, isLoading } = useCommunities();
   const createCommunity = useCreateCommunity();
   const [isCreating, setIsCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   const {
     register,
@@ -27,16 +27,16 @@ export function CommunitiesPage() {
   async function onSubmit(values: CreateCommunityInput) {
     setFormError(null);
     try {
-      const community = await createCommunity.mutateAsync({
+      await createCommunity.mutateAsync({
         name: values.name,
         description: values.description ?? "",
         type: values.type,
       });
       reset();
       setIsCreating(false);
-      navigate(`/c/${community.slug}`);
+      setSubmitted(true);
     } catch {
-      setFormError("Couldn't create that community. Try a different name.");
+      setFormError("Couldn't submit that request. Try a different name.");
     }
   }
 
@@ -46,13 +46,26 @@ export function CommunitiesPage() {
         <h1 className="text-lg font-bold text-brand-ink">Communities</h1>
         <button
           type="button"
-          onClick={() => setIsCreating((v) => !v)}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-orange"
+          onClick={() => {
+            setSubmitted(false);
+            setIsCreating((v) => !v);
+          }}
+          className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-black hover:bg-brand-orange"
         >
           <Plus size={16} />
           Create
         </button>
       </div>
+
+      {submitted && (
+        <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Your community request has been submitted for admin approval. You'll be able to find it
+            here once it's approved.
+          </p>
+        </div>
+      )}
 
       {isCreating && (
         <form

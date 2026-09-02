@@ -12,6 +12,14 @@ export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
 export type Message = Database["public"]["Tables"]["messages"]["Row"];
 export type Listing = Database["public"]["Tables"]["listings"]["Row"];
 export type ListingMedia = Database["public"]["Tables"]["listing_media"]["Row"];
+export type Professor = Database["public"]["Tables"]["professors"]["Row"];
+export type Course = Database["public"]["Tables"]["courses"]["Row"];
+export type Review = Database["public"]["Tables"]["reviews"]["Row"];
+export type ReviewVote = Database["public"]["Tables"]["review_votes"]["Row"];
+export type ReviewReport = Database["public"]["Tables"]["review_reports"]["Row"];
+export type EntitySubmission = Database["public"]["Tables"]["entity_submissions"]["Row"];
+export type Report = Database["public"]["Tables"]["reports"]["Row"];
+export type AuditLogEntry = Database["public"]["Tables"]["audit_log"]["Row"];
 
 export type PostWithAuthor = Post & {
   author: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
@@ -28,7 +36,7 @@ export type CommentWithAuthor = Comment & {
 
 export type UserSearchResult = Pick<
   AppUser,
-  "id" | "username" | "display_name" | "avatar_url" | "email" | "major"
+  "id" | "username" | "display_name" | "avatar_url" | "email" | "degree"
 >;
 
 export type CommunityWithMembership = Community & {
@@ -44,4 +52,43 @@ export type ConversationWithParticipant = Conversation & {
 export type ListingWithSeller = Listing & {
   seller: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
   listing_media: ListingMedia[];
+};
+
+// Reviewer identity is deliberately never fetched by the app for reviews
+// (see supabase/migrations/20260902270000_reviews_core.sql) — reviews are
+// anonymous-to-other-students by design, so ReviewPublic has no author
+// field at all, unlike PostWithAuthor/CommentWithAuthor.
+export type ReviewPublic = Omit<Review, "reviewer_id"> & {
+  // Whether the current viewer has marked this review helpful, and whether
+  // they authored it (both computed client-side from the viewer's own id,
+  // not from a reviewer_id the API returns).
+  viewer_has_voted: boolean;
+  is_own: boolean;
+};
+
+export type ProfessorWithCourses = Professor & {
+  professor_courses: { course: Pick<Course, "id" | "code" | "title" | "slug">; is_coordinator: boolean }[];
+};
+
+export type AssessmentComponent = {
+  type: string;
+  weight_pct: number;
+  detail?: string;
+};
+
+export type CourseWithProfessors = Omit<Course, "assessment_breakdown"> & {
+  assessment_breakdown: AssessmentComponent[];
+  professor_courses: {
+    professor: Pick<Professor, "id" | "first_name" | "last_name" | "slug" | "title">;
+    is_coordinator: boolean;
+  }[];
+};
+
+// From the course_teaching_ratings() SQL function — a module coordinator's
+// teaching rating scoped to *this* course only, distinct from their overall
+// professor-page avg_rating.
+export type CourseTeachingRating = {
+  professor_id: string;
+  avg_teaching: number;
+  rating_count: number;
 };

@@ -102,7 +102,7 @@ export function PostComposer({ communityId }: { communityId?: string } = {}) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg bg-brand-yellow px-4 py-1.5 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-brand-yellow px-4 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Posting…" : "Post"}
           </button>

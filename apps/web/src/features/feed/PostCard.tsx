@@ -1,9 +1,10 @@
 import { formatRelativeTime } from "@unibuzzz/shared";
 import type { QueryKey } from "@tanstack/react-query";
-import { ArrowBigDown, ArrowBigUp, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowBigDown, ArrowBigUp, Flag, Heart, MessageCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar";
 import { useAuth } from "../../lib/auth-context";
+import { ReportDialog } from "../reports/ReportDialog";
 import { CommentSection } from "./CommentSection";
 import { useDeletePost, useSetPostReaction, useToggleLike } from "./hooks";
 import { POSTS_QUERY_KEY, type FeedPost } from "./api";
@@ -22,6 +23,7 @@ export function PostCard({
   const vote = useSetPostReaction(queryKey);
   const deletePost = useDeletePost(queryKey);
   const [showComments, setShowComments] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const isOwnPost = post.author_id === appUser?.id;
   const isLiked = post.viewer_reaction === "like";
@@ -39,7 +41,7 @@ export function PostCard({
           </div>
         </div>
 
-        {isOwnPost && (
+        {isOwnPost ? (
           <button
             type="button"
             onClick={() => deletePost.mutate(post.id)}
@@ -48,8 +50,21 @@ export function PostCard({
           >
             <Trash2 size={16} />
           </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowReport(true)}
+            className="rounded-full p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            aria-label="Report post"
+          >
+            <Flag size={16} />
+          </button>
         )}
       </div>
+
+      {showReport && (
+        <ReportDialog targetType="post" targetId={post.id} onClose={() => setShowReport(false)} />
+      )}
 
       <p className="whitespace-pre-wrap px-4 pb-3 text-sm text-brand-ink">{post.body}</p>
 

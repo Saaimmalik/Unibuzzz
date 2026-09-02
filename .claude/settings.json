@@ -32,7 +32,26 @@
       "Bash(python3 -c \"import json; print\\(json.load\\(open\\('/tmp/listing2.json'\\)\\)[0]['id']\\)\")",
       "Bash(curl -s -X POST https://oaseqfvqdlvuhkcvobbg.supabase.co/rest/v1/rpc/start_marketplace_conversation -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2VxZnZxZGx2dWhrY3ZvYmJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjE2MjYsImV4cCI6MjEwMzkzNzYyNn0.cNOhE0eBi7ibtelKUVAiCWl-zF_PnVJM4_kcYgWFCXA' -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"p_listing_id\":\"__TRACKED_VAR__\"}')",
       "Bash(curl -s -X POST https://oaseqfvqdlvuhkcvobbg.supabase.co/storage/v1/object/listing-media/__TRACKED_VAR__/__TRACKED_VAR__/test.png -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2VxZnZxZGx2dWhrY3ZvYmJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjE2MjYsImV4cCI6MjEwMzkzNzYyNn0.cNOhE0eBi7ibtelKUVAiCWl-zF_PnVJM4_kcYgWFCXA' -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: image/png' --data-binary @/tmp/tiny.png)",
-      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' -X POST https://oaseqfvqdlvuhkcvobbg.supabase.co/storage/v1/object/sign/listing-media/__TRACKED_VAR__/__TRACKED_VAR__/test.png -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2VxZnZxZGx2dWhrY3ZvYmJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjE2MjYsImV4cCI6MjEwMzkzNzYyNn0.cNOhE0eBi7ibtelKUVAiCWl-zF_PnVJM4_kcYgWFCXA' -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -d '{\"expiresIn\":60}')"
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' -X POST https://oaseqfvqdlvuhkcvobbg.supabase.co/storage/v1/object/sign/listing-media/__TRACKED_VAR__/__TRACKED_VAR__/test.png -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2VxZnZxZGx2dWhrY3ZvYmJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjE2MjYsImV4cCI6MjEwMzkzNzYyNn0.cNOhE0eBi7ibtelKUVAiCWl-zF_PnVJM4_kcYgWFCXA' -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -d '{\"expiresIn\":60}')",
+      "Bash(python3 fetch_rmm_codes.py)",
+      "Bash(env)",
+      "Bash(chmod +x /private/tmp/claude-501/-Users-saaim-Documents-Projects-Unibuzzz/6129ca0f-9e34-40e9-932a-208066d5d627/scratchpad/rls_verify.sh)",
+      "Bash(bash /private/tmp/claude-501/-Users-saaim-Documents-Projects-Unibuzzz/6129ca0f-9e34-40e9-932a-208066d5d627/scratchpad/rls_verify.sh)",
+      "Bash(chromium-cli --session ubz-admin)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"require.resolve\\('playwright'\\)\")",
+      "Bash(npx --yes playwright@1.48 --version)",
+      "Bash(npx --yes playwright@1.48 install --with-deps chromium)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(echo \"install exit: $?\")",
+      "Bash(node smoke_test.mjs)",
+      "Bash(lsof -ti:5173 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(rm -f /tmp/zz_tokens.env /tmp/zz_resp.json /tmp/zz_dev.log /tmp/zz_npm_install.log 2>/dev/null; echo done)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
     ]
   }
 }

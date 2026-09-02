@@ -6,14 +6,26 @@
 export type UniversityStatus = "active" | "coming_soon";
 export type UserRole = "student" | "moderator" | "admin";
 export type UserStatus = "active" | "suspended" | "banned";
+export type ThemePreference = "light" | "dark" | "system";
 export type ReactionTargetType = "post" | "comment";
 export type ReactionType = "like" | "upvote" | "downvote";
 export type CommunityType = "public" | "restricted";
+export type CommunityStatus = "active" | "locked" | "removed";
 export type CommunityMemberRole = "member" | "mod" | "owner";
 export type ListingCategory =
   "textbooks" | "electronics" | "furniture" | "clothing" | "tickets" | "housing" | "other";
 export type ListingCondition = "new" | "like_new" | "good" | "fair" | "poor";
 export type ListingStatus = "active" | "sold" | "removed";
+export type ReviewTargetType = "professor" | "course";
+export type ReviewStatus = "pending" | "visible" | "hidden" | "removed";
+export type ReviewReportReason =
+  "harassment" | "personal_info" | "spam" | "off_topic" | "fake" | "other";
+export type EntitySubmissionType = "professor" | "course" | "community";
+export type EntitySubmissionStatus = "pending" | "approved" | "rejected" | "duplicate";
+export type ReportTargetType = "post" | "comment" | "listing" | "message" | "community" | "user";
+export type ReportReason =
+  "spam" | "harassment" | "hate_speech" | "inappropriate_content" | "scam" | "impersonation" | "other";
+export type ReportStatus = "pending" | "resolved" | "dismissed";
 
 export interface Database {
   public: {
@@ -55,10 +67,11 @@ export interface Database {
           display_name: string;
           avatar_url: string | null;
           bio: string | null;
-          major: string | null;
+          degree: string | null;
           grad_year: number | null;
           role: UserRole;
           status: UserStatus;
+          theme_preference: ThemePreference;
           created_at: string;
         };
         Insert: {
@@ -71,10 +84,11 @@ export interface Database {
           display_name: string;
           avatar_url?: string | null;
           bio?: string | null;
-          major?: string | null;
+          degree?: string | null;
           grad_year?: number | null;
           role?: UserRole;
           status?: UserStatus;
+          theme_preference?: ThemePreference;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>;
@@ -220,6 +234,7 @@ export interface Database {
           name: string;
           description: string | null;
           type: CommunityType;
+          status: CommunityStatus;
           member_count: number;
           created_by: string;
           created_at: string;
@@ -231,6 +246,7 @@ export interface Database {
           name: string;
           description?: string | null;
           type?: CommunityType;
+          status?: CommunityStatus;
           member_count?: number;
           created_by: string;
           created_at?: string;
@@ -407,6 +423,309 @@ export interface Database {
           },
         ];
       };
+      professors: {
+        Row: {
+          id: string;
+          university_id: string;
+          first_name: string;
+          last_name: string;
+          department: string;
+          slug: string;
+          review_count: number;
+          avg_rating: number;
+          trending_score: number;
+          merged_into_id: string | null;
+          would_recommend_pct: number | null;
+          title: string | null;
+          source_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          first_name: string;
+          last_name: string;
+          department: string;
+          slug: string;
+          review_count?: number;
+          avg_rating?: number;
+          trending_score?: number;
+          merged_into_id?: string | null;
+          would_recommend_pct?: number | null;
+          title?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["professors"]["Insert"]>;
+        Relationships: [];
+      };
+      courses: {
+        Row: {
+          id: string;
+          university_id: string;
+          code: string;
+          title: string;
+          department: string;
+          slug: string;
+          review_count: number;
+          avg_rating: number;
+          avg_interest: number;
+          avg_difficulty: number;
+          avg_workload: number;
+          would_recommend_pct: number | null;
+          trending_score: number;
+          merged_into_id: string | null;
+          credits: number | null;
+          student_effort_hours: number | null;
+          delivery: string | null;
+          level: string | null;
+          grading: string | null;
+          learning_outcomes: string | null;
+          teaching_methods: string | null;
+          assessment_breakdown: unknown;
+          description: string | null;
+          source_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          code: string;
+          title: string;
+          department: string;
+          slug: string;
+          review_count?: number;
+          avg_rating?: number;
+          avg_interest?: number;
+          avg_difficulty?: number;
+          avg_workload?: number;
+          would_recommend_pct?: number | null;
+          trending_score?: number;
+          merged_into_id?: string | null;
+          credits?: number | null;
+          student_effort_hours?: number | null;
+          delivery?: string | null;
+          level?: string | null;
+          grading?: string | null;
+          learning_outcomes?: string | null;
+          teaching_methods?: string | null;
+          assessment_breakdown?: unknown;
+          description?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["courses"]["Insert"]>;
+        Relationships: [];
+      };
+      professor_courses: {
+        Row: {
+          professor_id: string;
+          course_id: string;
+          is_coordinator: boolean;
+        };
+        Insert: {
+          professor_id: string;
+          course_id: string;
+          is_coordinator?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["professor_courses"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "professor_courses_professor_id_fkey";
+            columns: ["professor_id"];
+            isOneToOne: false;
+            referencedRelation: "professors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "professor_courses_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reviews: {
+        Row: {
+          id: string;
+          university_id: string;
+          reviewer_id: string;
+          target_type: ReviewTargetType;
+          target_id: string;
+          rating: number;
+          title: string | null;
+          body: string;
+          tags: string[];
+          would_recommend: boolean | null;
+          helpful_count: number;
+          status: ReviewStatus;
+          flagged_pii: boolean;
+          interest_rating: number | null;
+          difficulty_rating: number | null;
+          workload_rating: number | null;
+          teaching_rating: number | null;
+          taught_by_professor_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          reviewer_id: string;
+          target_type: ReviewTargetType;
+          target_id: string;
+          rating: number;
+          title?: string | null;
+          body: string;
+          tags?: string[];
+          would_recommend?: boolean | null;
+          helpful_count?: number;
+          status?: ReviewStatus;
+          flagged_pii?: boolean;
+          interest_rating?: number | null;
+          difficulty_rating?: number | null;
+          workload_rating?: number | null;
+          teaching_rating?: number | null;
+          taught_by_professor_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>;
+        Relationships: [];
+      };
+      review_votes: {
+        Row: {
+          review_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          review_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["review_votes"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      review_reports: {
+        Row: {
+          id: string;
+          review_id: string;
+          reporter_id: string;
+          reason: ReviewReportReason;
+          details: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          review_id: string;
+          reporter_id: string;
+          reason: ReviewReportReason;
+          details?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["review_reports"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "review_reports_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_submissions: {
+        Row: {
+          id: string;
+          university_id: string;
+          submitted_by: string;
+          type: EntitySubmissionType;
+          payload: Record<string, unknown>;
+          status: EntitySubmissionStatus;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          submitted_by: string;
+          type: EntitySubmissionType;
+          payload: Record<string, unknown>;
+          status?: EntitySubmissionStatus;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["entity_submissions"]["Insert"]>;
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: string;
+          university_id: string;
+          reporter_id: string;
+          target_type: ReportTargetType;
+          target_id: string;
+          reason: ReportReason;
+          details: string | null;
+          status: ReportStatus;
+          resolved_by: string | null;
+          resolved_at: string | null;
+          resolution_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          reporter_id: string;
+          target_type: ReportTargetType;
+          target_id: string;
+          reason: ReportReason;
+          details?: string | null;
+          status?: ReportStatus;
+          resolved_by?: string | null;
+          resolved_at?: string | null;
+          resolution_note?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reports"]["Insert"]>;
+        Relationships: [];
+      };
+      audit_log: {
+        Row: {
+          id: string;
+          university_id: string;
+          actor_id: string | null;
+          action: string;
+          target_type: string;
+          target_id: string | null;
+          reason: string | null;
+          metadata: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          actor_id?: string | null;
+          action: string;
+          target_type: string;
+          target_id?: string | null;
+          reason?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["audit_log"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -425,6 +744,18 @@ export interface Database {
       is_username_available: {
         Args: { p_username: string };
         Returns: boolean;
+      };
+      admin_review_entity_submission: {
+        Args: { p_submission_id: string; p_decision: string; p_merge_into_id?: string | null };
+        Returns: string | null;
+      };
+      resolve_report: {
+        Args: { p_report_id: string; p_decision: string; p_note?: string | null };
+        Returns: void;
+      };
+      course_teaching_ratings: {
+        Args: { p_course_id: string };
+        Returns: { professor_id: string; avg_teaching: number; rating_count: number }[];
       };
     };
   };

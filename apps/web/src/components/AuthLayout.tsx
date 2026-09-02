@@ -55,5 +55,9 @@ export function AuthField({
 export const authInputClasses =
   "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-brand-ink placeholder:text-stone-400 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/20";
 
+// text-black (not text-brand-ink): this label sits on a solid yellow/orange
+// button, which stays bright in dark mode too, so the label must stay dark
+// regardless of theme — text-brand-ink flips light in dark mode (see
+// index.css), which would be unreadable here.
 export const authButtonClasses =
-  "w-full rounded-lg bg-brand-yellow px-4 py-2.5 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand-orange disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-lg bg-brand-yellow px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-brand-orange disabled:cursor-not-allowed disabled:opacity-60";

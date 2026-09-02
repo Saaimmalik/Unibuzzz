@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { Avatar } from "../components/Avatar";
 import { PostCard } from "../features/feed/PostCard";
 import { useListingSearch } from "../features/marketplace/hooks";
+import { StarRating } from "../features/reviews/StarRating";
+import { useCourseSearch, useProfessorSearch } from "../features/reviews/hooks";
 import { usePostSearch, useUserSearch } from "../features/search/hooks";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 
@@ -18,6 +20,8 @@ export function SearchPage() {
   const { data: users, isLoading: usersLoading } = useUserSearch(debouncedQuery);
   const { data: posts, isLoading: postsLoading } = usePostSearch(debouncedQuery);
   const { data: listings, isLoading: listingsLoading } = useListingSearch(debouncedQuery);
+  const { data: professors, isLoading: professorsLoading } = useProfessorSearch(debouncedQuery);
+  const { data: courses, isLoading: coursesLoading } = useCourseSearch(debouncedQuery);
 
   const hasQuery = debouncedQuery.trim().length >= 2;
 
@@ -106,6 +110,56 @@ export function SearchPage() {
                         {formatPrice(listing.price_cents)}
                       </p>
                     </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-stone-500">Professors</h2>
+            {professorsLoading && <p className="text-sm text-stone-400">Searching…</p>}
+            {!professorsLoading && professors?.length === 0 && (
+              <p className="text-sm text-stone-400">No professors found.</p>
+            )}
+            <ul className="space-y-1">
+              {professors?.map((professor) => (
+                <li key={professor.id}>
+                  <Link
+                    to={`/reviews/professors/${professor.slug}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3 hover:border-brand-purple/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-brand-ink">
+                        {professor.first_name} {professor.last_name}
+                      </p>
+                      <p className="truncate text-xs text-stone-500">{professor.department}</p>
+                    </div>
+                    <StarRating value={professor.avg_rating} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-stone-500">Courses</h2>
+            {coursesLoading && <p className="text-sm text-stone-400">Searching…</p>}
+            {!coursesLoading && courses?.length === 0 && (
+              <p className="text-sm text-stone-400">No courses found.</p>
+            )}
+            <ul className="space-y-1">
+              {courses?.map((course) => (
+                <li key={course.id}>
+                  <Link
+                    to={`/reviews/courses/${course.slug}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3 hover:border-brand-purple/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-brand-ink">{course.code}</p>
+                      <p className="truncate text-xs text-stone-500">{course.title}</p>
+                    </div>
+                    <StarRating value={course.avg_rating} />
                   </Link>
                 </li>
               ))}

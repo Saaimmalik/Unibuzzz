@@ -15,6 +15,23 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Applied synchronously, before first paint, to avoid a flash of the
+      // wrong theme — ThemeProvider (src/lib/ThemeProvider.tsx) takes over
+      // from here once React mounts. Defaults to dark (matches
+      // users.theme_preference's DB default) when nothing is stored yet.
+      (function () {
+        try {
+          var stored = localStorage.getItem("unibuzzz-theme") || "dark";
+          var isDark =
+            stored === "dark" ||
+            (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", isDark);
+        } catch {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

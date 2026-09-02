@@ -36,18 +36,16 @@ export function useCommunity(slug: string) {
 
 export function useCreateCommunity() {
   const { appUser } = useAuth();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: { name: string; description: string; type: "public" | "restricted" }) =>
       createCommunity({
         universityId: appUser!.university_id,
-        createdBy: appUser!.id,
+        submittedBy: appUser!.id,
         name: input.name,
         description: input.description,
         type: input.type,
       }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: COMMUNITIES_QUERY_KEY }),
   });
 }
 

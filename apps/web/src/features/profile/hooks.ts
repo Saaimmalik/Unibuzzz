@@ -11,7 +11,7 @@ export function useUpdateProfile() {
     mutationFn: async (input: {
       displayName: string;
       bio: string;
-      major: string;
+      degree: string;
       gradYear: number | "";
       avatar?: File | null;
     }) => {
@@ -23,7 +23,7 @@ export function useUpdateProfile() {
       await updateProfile(appUser!.id, {
         display_name: input.displayName,
         bio: input.bio || null,
-        major: input.major || null,
+        degree: input.degree || null,
         grad_year: input.gradYear === "" ? null : input.gradYear,
         ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       });
