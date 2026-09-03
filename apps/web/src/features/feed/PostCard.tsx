@@ -13,16 +13,18 @@ export function PostCard({
   post,
   queryKey = POSTS_QUERY_KEY,
   mode = "like",
+  defaultShowComments = false,
 }: {
   post: FeedPost;
   queryKey?: QueryKey;
   mode?: "like" | "vote";
+  defaultShowComments?: boolean;
 }) {
   const { appUser } = useAuth();
   const toggleLike = useToggleLike(queryKey);
   const vote = useSetPostReaction(queryKey);
   const deletePost = useDeletePost(queryKey);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(defaultShowComments);
   const [showReport, setShowReport] = useState(false);
 
   const isOwnPost = post.author_id === appUser?.id;

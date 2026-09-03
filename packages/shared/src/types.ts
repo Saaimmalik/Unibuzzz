@@ -20,6 +20,7 @@ export type ReviewReport = Database["public"]["Tables"]["review_reports"]["Row"]
 export type EntitySubmission = Database["public"]["Tables"]["entity_submissions"]["Row"];
 export type Report = Database["public"]["Tables"]["reports"]["Row"];
 export type AuditLogEntry = Database["public"]["Tables"]["audit_log"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 export type PostWithAuthor = Post & {
   author: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
@@ -32,6 +33,13 @@ export type PostWithAuthor = Post & {
 
 export type CommentWithAuthor = Comment & {
   author: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
+};
+
+export type NotificationWithActor = Notification & {
+  // Null when actor_id is null (a system-originated notification — content
+  // moderation, report resolution) or when the actor account no longer
+  // exists (actor_id on delete set null).
+  actor: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url"> | null;
 };
 
 export type UserSearchResult = Pick<

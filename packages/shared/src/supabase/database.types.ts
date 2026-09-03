@@ -26,6 +26,8 @@ export type ReportTargetType = "post" | "comment" | "listing" | "message" | "com
 export type ReportReason =
   "spam" | "harassment" | "hate_speech" | "inappropriate_content" | "scam" | "impersonation" | "other";
 export type ReportStatus = "pending" | "resolved" | "dismissed";
+export type NotificationType =
+  "post_like" | "post_comment" | "message" | "review_helpful" | "content_removed" | "report_resolved";
 
 export interface Database {
   public: {
@@ -725,6 +727,40 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["audit_log"]["Insert"]>;
         Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          university_id: string;
+          recipient_id: string;
+          actor_id: string | null;
+          type: NotificationType;
+          link_path: string;
+          preview: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          recipient_id: string;
+          actor_id?: string | null;
+          type: NotificationType;
+          link_path: string;
+          preview?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;

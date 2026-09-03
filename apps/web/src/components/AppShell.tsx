@@ -1,6 +1,7 @@
 import { isStaffRole } from "@unibuzzz/shared";
 import { Bell, Home, MessageCircle, Search, Shield, ShoppingBag, Star, User, Users } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useUnreadNotificationsCount } from "../features/notifications/hooks";
 import { useAuth } from "../lib/auth-context";
 
 const navItems = [
@@ -21,9 +22,19 @@ function navLinkClasses(isActive: boolean) {
   ].join(" ");
 }
 
+function NotificationBadge({ count }: { count: number }) {
+  if (count === 0) return null;
+  return (
+    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-orange px-1 text-[10px] font-bold text-white">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
 export function AppShell() {
   const { appUser, signOut } = useAuth();
   const isStaff = isStaffRole(appUser?.role);
+  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
 
   return (
     <div className="flex min-h-dvh flex-col bg-stone-50 md:flex-row">
@@ -69,7 +80,10 @@ export function AppShell() {
               end={end}
               className={({ isActive }) => navLinkClasses(isActive)}
             >
-              <Icon size={20} strokeWidth={2} />
+              <span className="relative">
+                <Icon size={20} strokeWidth={2} />
+                {to === "/notifications" && <NotificationBadge count={unreadCount} />}
+              </span>
               {label}
             </NavLink>
           ))}
@@ -150,7 +164,10 @@ export function AppShell() {
             end={end}
             className={({ isActive }) => navLinkClasses(isActive)}
           >
-            <Icon size={22} strokeWidth={2} />
+            <span className="relative">
+              <Icon size={22} strokeWidth={2} />
+              {to === "/notifications" && <NotificationBadge count={unreadCount} />}
+            </span>
             {label}
           </NavLink>
         ))}

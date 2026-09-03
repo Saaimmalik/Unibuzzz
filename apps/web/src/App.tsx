@@ -14,6 +14,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { MarketplacePage } from "./pages/MarketplacePage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
+import { PostPage } from "./pages/PostPage";
 import { ProfessorPage } from "./pages/ProfessorPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PublicProfilePage } from "./pages/PublicProfilePage";
@@ -83,6 +84,7 @@ function App() {
 
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/posts/:postId" element={<PostPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/c/:slug" element={<CommunityPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />

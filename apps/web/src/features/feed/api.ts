@@ -63,6 +63,20 @@ export async function fetchPosts(viewerId: string): Promise<FeedPost[]> {
   return hydratePosts(posts ?? [], viewerId);
 }
 
+// No deleted_at/community_id filter — RLS already resolves visibility (own
+// deleted post, restricted-community membership, etc.), so this can serve
+// as the single "get me this one post" lookup for both a plain permalink
+// visit and a notification deep link into a moderated/removed post the
+// viewer is entitled to see (the author, or staff).
+export async function fetchPostById(postId: string, viewerId: string): Promise<FeedPost | null> {
+  const { data: post, error } = await supabase.from("posts").select(POST_SELECT).eq("id", postId).maybeSingle();
+  if (error) throw error;
+  if (!post) return null;
+
+  const [hydrated] = await hydratePosts([post], viewerId);
+  return hydrated;
+}
+
 export async function fetchCommunityPosts(
   communityId: string,
   viewerId: string,

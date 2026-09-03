@@ -10,11 +10,24 @@ import {
   createComment,
   createPost,
   fetchComments,
+  fetchPostById,
   fetchPosts,
   setReaction,
   softDeletePost,
   type FeedPost,
 } from "./api";
+
+export const postQueryKey = (postId: string) => ["posts", "single", postId] as const;
+
+export function usePost(postId: string) {
+  const { appUser } = useAuth();
+
+  return useQuery({
+    queryKey: postQueryKey(postId),
+    queryFn: () => fetchPostById(postId, appUser!.id),
+    enabled: !!appUser && !!postId,
+  });
+}
 
 export function usePostsFeed() {
   const { appUser } = useAuth();
