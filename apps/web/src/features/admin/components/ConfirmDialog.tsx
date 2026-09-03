@@ -48,7 +48,9 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={isPending}
             className={`w-full rounded-lg px-3 py-2 text-sm font-semibold text-white disabled:opacity-60 ${
-              destructive ? "bg-red-600 hover:bg-red-700" : "bg-brand-purple hover:bg-brand-purple/90"
+              destructive
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-brand-purple hover:bg-brand-purple/90"
             }`}
           >
             {isPending ? "Working…" : confirmLabel}

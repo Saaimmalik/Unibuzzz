@@ -10,7 +10,9 @@ export function PostPage() {
     <div className="mx-auto max-w-xl space-y-4 px-4 py-6">
       {isLoading && <p className="py-8 text-center text-sm text-stone-400">Loading post…</p>}
       {isError && (
-        <p className="py-8 text-center text-sm text-red-600">Couldn't load this post. Try refreshing.</p>
+        <p className="py-8 text-center text-sm text-red-600">
+          Couldn't load this post. Try refreshing.
+        </p>
       )}
       {!isLoading && !isError && !post && (
         <p className="py-8 text-center text-sm text-stone-400">

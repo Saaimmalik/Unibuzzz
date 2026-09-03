@@ -21,11 +21,11 @@ export function HomePage() {
   const followingQuery = useFollowingPostsFeed();
   const searchQuery = useFeedPostSearch(debouncedQuery);
 
-  const { data: posts, isLoading, isError } = isSearching
-    ? searchQuery
-    : tab === "forYou"
-      ? forYouQuery
-      : followingQuery;
+  const {
+    data: posts,
+    isLoading,
+    isError,
+  } = isSearching ? searchQuery : tab === "forYou" ? forYouQuery : followingQuery;
 
   return (
     <div className="mx-auto max-w-xl space-y-4 px-4 py-6">
@@ -87,8 +87,8 @@ export function HomePage() {
       )}
       {!isLoading && posts && posts.length === 0 && !isSearching && tab === "following" && (
         <p className="py-8 text-center text-sm text-stone-400">
-          Posts from people you follow will show up here — follow someone from their profile to
-          get started.
+          Posts from people you follow will show up here — follow someone from their profile to get
+          started.
         </p>
       )}
 

@@ -50,8 +50,6 @@
       "Bash(xargs -r kill)",
       "Bash(rm -f /tmp/zz_tokens.env /tmp/zz_resp.json /tmp/zz_dev.log /tmp/zz_npm_install.log 2>/dev/null; echo done)"
     ],
-    "additionalDirectories": [
-      "/private/tmp"
-    ]
+    "additionalDirectories": ["/private/tmp"]
   }
 }

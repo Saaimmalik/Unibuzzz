@@ -63,7 +63,12 @@ function SuggestCourseForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
       <AuthField label="Module code" error={errors.code?.message}>
-        <input type="text" placeholder="e.g. COMP10060" className={authInputClasses} {...register("code")} />
+        <input
+          type="text"
+          placeholder="e.g. COMP10060"
+          className={authInputClasses}
+          {...register("code")}
+        />
       </AuthField>
       <AuthField label="Title" error={errors.title?.message}>
         <input type="text" className={authInputClasses} {...register("title")} />

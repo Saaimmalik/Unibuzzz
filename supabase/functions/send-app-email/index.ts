@@ -36,7 +36,9 @@ Deno.serve(async (req: Request) => {
   }
 
   if (!body.type || !body.recipientEmail) {
-    return new Response(JSON.stringify({ error: "type and recipientEmail are required" }), { status: 400 });
+    return new Response(JSON.stringify({ error: "type and recipientEmail are required" }), {
+      status: 400,
+    });
   }
 
   const { subject, html } = renderAppEmail(body.type, {

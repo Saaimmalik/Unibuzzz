@@ -26,7 +26,10 @@ export async function logEmail(entry: {
   try {
     const client = serviceClient();
     if (!client) {
-      console.error("logEmail: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY missing, skipping DB log", entry);
+      console.error(
+        "logEmail: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY missing, skipping DB log",
+        entry,
+      );
       return;
     }
     const { error } = await client.from("email_log").insert(entry);

@@ -3,10 +3,7 @@ import { brand, logoUrl } from "./brand.ts";
 // One branded shell every template renders into — bee logo header, clean
 // white card body, brand-purple footer. Adding a new template means writing
 // a heading/body/button, not a new HTML document; see templates.ts.
-export function renderLayout(opts: {
-  preheader?: string;
-  bodyHtml: string;
-}): string {
+export function renderLayout(opts: { preheader?: string; bodyHtml: string }): string {
   const { preheader = "", bodyHtml } = opts;
 
   return `<!doctype html>

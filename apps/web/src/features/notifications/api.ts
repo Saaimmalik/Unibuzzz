@@ -5,7 +5,8 @@ import { supabase } from "../../lib/supabase";
 // embed must name the constraint — an unqualified `users(...)` is an
 // ambiguous relationship PostgREST rejects (same fix as posts' author
 // embed in features/feed/api.ts).
-const NOTIFICATION_SELECT = "*, actor:users!notifications_actor_id_fkey(id,username,display_name,avatar_url)";
+const NOTIFICATION_SELECT =
+  "*, actor:users!notifications_actor_id_fkey(id,username,display_name,avatar_url)";
 
 export async function fetchNotifications(): Promise<NotificationWithActor[]> {
   const { data, error } = await supabase

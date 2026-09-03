@@ -35,8 +35,12 @@ export function AdminAuditLogPage() {
         {entries?.map((entry) => (
           <li key={entry.id} className="px-4 py-3">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-brand-ink">{entry.action.replace(/_/g, " ")}</p>
-              <p className="shrink-0 text-xs text-stone-400">{formatRelativeTime(entry.created_at)}</p>
+              <p className="text-sm font-semibold text-brand-ink">
+                {entry.action.replace(/_/g, " ")}
+              </p>
+              <p className="shrink-0 text-xs text-stone-400">
+                {formatRelativeTime(entry.created_at)}
+              </p>
             </div>
             <p className="text-xs text-stone-500">
               target: {entry.target_type}

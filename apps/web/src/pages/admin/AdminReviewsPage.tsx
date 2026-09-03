@@ -3,7 +3,11 @@ import { useState } from "react";
 import { adminSelectClasses } from "../../features/admin/components/AdminFilterBar";
 import { ConfirmDialog } from "../../features/admin/components/ConfirmDialog";
 import { StatusBadge } from "../../features/admin/components/StatusBadge";
-import { useAdminReviewReports, useAdminReviews, useModerateReview } from "../../features/admin/hooks";
+import {
+  useAdminReviewReports,
+  useAdminReviews,
+  useModerateReview,
+} from "../../features/admin/hooks";
 
 function tabClasses(active: boolean) {
   return `rounded-full px-3 py-1.5 text-sm font-semibold ${
@@ -109,7 +113,9 @@ function ReviewReportsTab() {
       <ul className="divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white">
         {reports?.map((report) => (
           <li key={report.id} className="px-4 py-3">
-            <p className="text-sm font-semibold text-brand-ink">{report.reason.replace(/_/g, " ")}</p>
+            <p className="text-sm font-semibold text-brand-ink">
+              {report.reason.replace(/_/g, " ")}
+            </p>
             {report.details && <p className="text-sm text-stone-600">{report.details}</p>}
             <p className="mt-1 text-xs text-stone-400">{formatRelativeTime(report.created_at)}</p>
           </li>
@@ -129,10 +135,18 @@ export function AdminReviewsPage() {
     <div className="mx-auto max-w-3xl space-y-4">
       <h1 className="text-lg font-bold text-brand-ink">Reviews</h1>
       <div className="flex w-fit gap-1 rounded-full bg-stone-100 p-1">
-        <button type="button" onClick={() => setTab("reviews")} className={tabClasses(tab === "reviews")}>
+        <button
+          type="button"
+          onClick={() => setTab("reviews")}
+          className={tabClasses(tab === "reviews")}
+        >
           Reviews
         </button>
-        <button type="button" onClick={() => setTab("reports")} className={tabClasses(tab === "reports")}>
+        <button
+          type="button"
+          onClick={() => setTab("reports")}
+          className={tabClasses(tab === "reports")}
+        >
           Review reports
         </button>
       </div>

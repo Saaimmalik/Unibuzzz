@@ -1,6 +1,15 @@
 import type { NotificationWithActor } from "@unibuzzz/shared";
 import { formatRelativeTime } from "@unibuzzz/shared";
-import { CheckCircle2, Heart, Mail, MessageCircle, ShieldAlert, Star, Users, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Heart,
+  Mail,
+  MessageCircle,
+  ShieldAlert,
+  Star,
+  Users,
+  XCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Avatar } from "../../components/Avatar";
 import { useMarkNotificationRead } from "./hooks";
@@ -23,7 +32,9 @@ function notificationText(n: NotificationWithActor): string {
         ? `${actorName} commented on your post: "${n.preview}"`
         : `${actorName} commented on your post`;
     case "message":
-      return n.preview ? `${actorName} sent you a message: "${n.preview}"` : `${actorName} sent you a message`;
+      return n.preview
+        ? `${actorName} sent you a message: "${n.preview}"`
+        : `${actorName} sent you a message`;
     case "review_helpful":
       return `${actorName} found your review helpful`;
     case "content_removed":
@@ -54,11 +65,16 @@ export function NotificationItem({ notification }: { notification: NotificationW
       }`}
     >
       {notification.actor ? (
-        <Avatar displayName={notification.actor.display_name} avatarUrl={notification.actor.avatar_url} size="sm" />
+        <Avatar
+          displayName={notification.actor.display_name}
+          avatarUrl={notification.actor.avatar_url}
+          size="sm"
+        />
       ) : (
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-purple/10 text-brand-purple">
           {(() => {
-            const Icon = SYSTEM_ICONS[notification.type as keyof typeof SYSTEM_ICONS] ?? ShieldAlert;
+            const Icon =
+              SYSTEM_ICONS[notification.type as keyof typeof SYSTEM_ICONS] ?? ShieldAlert;
             return <Icon size={14} />;
           })()}
         </div>
@@ -66,7 +82,9 @@ export function NotificationItem({ notification }: { notification: NotificationW
 
       <div className="min-w-0 flex-1">
         <p className="text-sm text-brand-ink">{notificationText(notification)}</p>
-        <p className="mt-0.5 text-xs text-stone-500">{formatRelativeTime(notification.created_at)}</p>
+        <p className="mt-0.5 text-xs text-stone-500">
+          {formatRelativeTime(notification.created_at)}
+        </p>
       </div>
 
       <div className="mt-1.5 shrink-0 text-stone-400">
@@ -76,7 +94,9 @@ export function NotificationItem({ notification }: { notification: NotificationW
         {notification.type === "review_helpful" && <Star size={16} />}
       </div>
 
-      {isUnread && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-orange" aria-hidden />}
+      {isUnread && (
+        <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-orange" aria-hidden />
+      )}
     </Link>
   );
 }

@@ -102,7 +102,11 @@ export async function fetchPosts(viewerId: string): Promise<FeedPost[]> {
 // visit and a notification deep link into a moderated/removed post the
 // viewer is entitled to see (the author, or staff).
 export async function fetchPostById(postId: string, viewerId: string): Promise<FeedPost | null> {
-  const { data: post, error } = await supabase.from("posts").select(POST_SELECT).eq("id", postId).maybeSingle();
+  const { data: post, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .eq("id", postId)
+    .maybeSingle();
   if (error) throw error;
   if (!post) return null;
 

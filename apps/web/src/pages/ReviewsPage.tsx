@@ -122,7 +122,9 @@ export function ReviewsPage() {
               {!professorResults.isLoading && professorResults.data?.length === 0 && (
                 <p className="text-sm text-stone-400">No professors found. Suggest one above.</p>
               )}
-              {professorResults.data?.map((p) => <ProfessorRow key={p.id} professor={p} />)}
+              {professorResults.data?.map((p) => (
+                <ProfessorRow key={p.id} professor={p} />
+              ))}
             </>
           ) : (
             <>
@@ -130,7 +132,9 @@ export function ReviewsPage() {
               {!courseResults.isLoading && courseResults.data?.length === 0 && (
                 <p className="text-sm text-stone-400">No courses found. Suggest one above.</p>
               )}
-              {courseResults.data?.map((c) => <CourseRow key={c.id} course={c} />)}
+              {courseResults.data?.map((c) => (
+                <CourseRow key={c.id} course={c} />
+              ))}
             </>
           )}
         </section>

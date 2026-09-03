@@ -116,7 +116,11 @@ export function AdminCommunitiesPage() {
     <div className="mx-auto max-w-3xl space-y-4">
       <h1 className="text-lg font-bold text-brand-ink">Communities</h1>
       <div className="flex w-fit gap-1 rounded-full bg-stone-100 p-1">
-        <button type="button" onClick={() => setTab("active")} className={tabClasses(tab === "active")}>
+        <button
+          type="button"
+          onClick={() => setTab("active")}
+          className={tabClasses(tab === "active")}
+        >
           Active
         </button>
         <button
@@ -131,7 +135,10 @@ export function AdminCommunitiesPage() {
       {tab === "active" && <ActiveTab />}
       {tab === "requests" &&
         (isAdmin ? (
-          <EntitySubmissionsQueue types={["community"]} emptyLabel="No pending community requests." />
+          <EntitySubmissionsQueue
+            types={["community"]}
+            emptyLabel="No pending community requests."
+          />
         ) : (
           <p className="text-sm text-stone-400">Only admins can approve community requests.</p>
         ))}

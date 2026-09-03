@@ -7,7 +7,12 @@ export function useCreateReport() {
   const { appUser } = useAuth();
 
   return useMutation({
-    mutationFn: (input: { targetType: ReportTargetType; targetId: string; reason: ReportReason; details: string | null }) =>
+    mutationFn: (input: {
+      targetType: ReportTargetType;
+      targetId: string;
+      reason: ReportReason;
+      details: string | null;
+    }) =>
       createReport({
         universityId: appUser!.university_id,
         reporterId: appUser!.id,

@@ -47,7 +47,10 @@ function AssessmentBar({ item }: { item: AssessmentComponent }) {
         <span className="font-semibold text-brand-purple">{item.weight_pct}%</span>
       </div>
       <div className="mt-1 h-2 rounded-full bg-stone-100">
-        <div className="h-2 rounded-full bg-brand-purple" style={{ width: `${item.weight_pct}%` }} />
+        <div
+          className="h-2 rounded-full bg-brand-purple"
+          style={{ width: `${item.weight_pct}%` }}
+        />
       </div>
       {item.detail && <p className="mt-0.5 text-xs text-stone-400">{item.detail}</p>}
     </div>
@@ -64,11 +67,11 @@ export function CoursePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: course, isLoading } = useCourse(slug ?? "");
   const [sort, setSort] = useState<ReviewSort>("recent");
-  const { reviews, ownReview, isLoading: reviewsLoading } = useReviews(
-    "course",
-    course?.id ?? "",
-    sort,
-  );
+  const {
+    reviews,
+    ownReview,
+    isLoading: reviewsLoading,
+  } = useReviews("course", course?.id ?? "", sort);
   const { data: teachingRatings } = useCourseTeachingRatings(course?.id ?? "");
   const [isWriting, setIsWriting] = useState(false);
 
@@ -176,7 +179,9 @@ export function CoursePage() {
           <div>
             <p className="text-xs font-medium text-stone-600">Would recommend</p>
             <p className="mt-1 text-xl font-bold text-brand-ink">
-              {course.would_recommend_pct !== null ? `${Math.round(course.would_recommend_pct)}%` : "—"}
+              {course.would_recommend_pct !== null
+                ? `${Math.round(course.would_recommend_pct)}%`
+                : "—"}
             </p>
           </div>
         </div>
@@ -217,8 +222,8 @@ export function CoursePage() {
         <div className="space-y-2 rounded-2xl border border-stone-200 bg-white p-4">
           <h2 className="text-sm font-bold text-brand-ink">Who teaches it</h2>
           <p className="text-xs text-stone-400">
-            Named by students in their reviews. These ratings cover this module only, and don't count
-            towards the professor's overall score.
+            Named by students in their reviews. These ratings cover this module only, and don't
+            count towards the professor's overall score.
           </p>
           {course.professor_courses.map(({ professor, is_coordinator }) => {
             const teaching = teachingByProfessorId.get(professor.id);
@@ -256,7 +261,9 @@ export function CoursePage() {
           <h2 className="text-sm font-bold text-brand-ink">Official details</h2>
           {course.student_effort_hours && (
             <p className="text-xs text-stone-500">
-              <span className="font-semibold text-brand-ink">{course.student_effort_hours} hours</span>{" "}
+              <span className="font-semibold text-brand-ink">
+                {course.student_effort_hours} hours
+              </span>{" "}
               of student effort
             </p>
           )}

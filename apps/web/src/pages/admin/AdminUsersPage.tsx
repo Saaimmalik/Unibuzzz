@@ -60,7 +60,11 @@ export function AdminUsersPage() {
         </p>
       )}
 
-      <AdminFilterBar query={query} onQueryChange={setQuery} placeholder="Search by name, username, email…">
+      <AdminFilterBar
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Search by name, username, email…"
+      >
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole | "")}

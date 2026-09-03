@@ -50,9 +50,7 @@ export function FollowListModal({
             >
               <Avatar displayName={user.display_name} avatarUrl={user.avatar_url} size="sm" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-brand-ink">
-                  {user.display_name}
-                </p>
+                <p className="truncate text-sm font-semibold text-brand-ink">{user.display_name}</p>
                 <p className="truncate text-xs text-stone-500">@{user.username}</p>
               </div>
             </Link>

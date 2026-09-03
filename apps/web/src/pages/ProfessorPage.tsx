@@ -9,10 +9,11 @@ import { useProfessor, useReviews } from "../features/reviews/hooks";
 export function ProfessorPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: professor, isLoading } = useProfessor(slug ?? "");
-  const { reviews, ownReview, isLoading: reviewsLoading } = useReviews(
-    "professor",
-    professor?.id ?? "",
-  );
+  const {
+    reviews,
+    ownReview,
+    isLoading: reviewsLoading,
+  } = useReviews("professor", professor?.id ?? "");
   const [isWriting, setIsWriting] = useState(false);
 
   if (isLoading) return <p className="py-10 text-center text-sm text-stone-400">Loading…</p>;
@@ -66,7 +67,11 @@ export function ProfessorPage() {
       )}
 
       {isWriting && (
-        <ReviewForm targetType="professor" targetId={professor.id} onDone={() => setIsWriting(false)} />
+        <ReviewForm
+          targetType="professor"
+          targetId={professor.id}
+          onDone={() => setIsWriting(false)}
+        />
       )}
 
       <div className="space-y-3">
@@ -77,7 +82,12 @@ export function ProfessorPage() {
           </p>
         )}
         {reviews.map((review) => (
-          <ReviewCard key={review.id} review={review} targetType="professor" targetId={professor.id} />
+          <ReviewCard
+            key={review.id}
+            review={review}
+            targetType="professor"
+            targetId={professor.id}
+          />
         ))}
       </div>
     </div>

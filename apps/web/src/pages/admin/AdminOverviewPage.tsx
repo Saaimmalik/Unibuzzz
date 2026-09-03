@@ -42,7 +42,12 @@ export function AdminOverviewPage() {
       {data && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <StatCard icon={Flag} label="Pending reports" value={data.pendingReports} to="/admin/reports" />
+            <StatCard
+              icon={Flag}
+              label="Pending reports"
+              value={data.pendingReports}
+              to="/admin/reports"
+            />
             <StatCard
               icon={UsersRound}
               label="Community requests"
@@ -69,7 +74,10 @@ export function AdminOverviewPage() {
             ) : (
               <ul className="divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white">
                 {data.recentAuditLog.map((entry) => (
-                  <li key={entry.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                  <li
+                    key={entry.id}
+                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                  >
                     <span className="text-brand-ink">{entry.action.replace(/_/g, " ")}</span>
                     <span className="shrink-0 text-xs text-stone-400">
                       {formatRelativeTime(entry.created_at)}

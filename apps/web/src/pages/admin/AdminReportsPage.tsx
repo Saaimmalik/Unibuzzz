@@ -8,9 +8,10 @@ import { useAdminReports, useResolveReport } from "../../features/admin/hooks";
 export function AdminReportsPage() {
   const [status, setStatus] = useState<ReportStatus | "">("pending");
   const [targetType, setTargetType] = useState<ReportTargetType | "">("");
-  const [resolving, setResolving] = useState<{ id: string; decision: "resolved" | "dismissed" } | null>(
-    null,
-  );
+  const [resolving, setResolving] = useState<{
+    id: string;
+    decision: "resolved" | "dismissed";
+  } | null>(null);
   const { data: reports, isLoading } = useAdminReports({
     status: status || undefined,
     targetType: targetType || undefined,
@@ -92,7 +93,11 @@ export function AdminReportsPage() {
 
       {resolving && (
         <ConfirmDialog
-          title={resolving.decision === "resolved" ? "Mark this report resolved?" : "Dismiss this report?"}
+          title={
+            resolving.decision === "resolved"
+              ? "Mark this report resolved?"
+              : "Dismiss this report?"
+          }
           description={
             resolving.decision === "resolved"
               ? "Mark this as handled. If the content itself needs removing, do that from its own admin page first."

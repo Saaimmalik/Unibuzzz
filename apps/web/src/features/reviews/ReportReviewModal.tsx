@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { reportReviewSchema, REVIEW_REPORT_REASONS, type ReportReviewInput } from "@unibuzzz/shared";
+import {
+  reportReviewSchema,
+  REVIEW_REPORT_REASONS,
+  type ReportReviewInput,
+} from "@unibuzzz/shared";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { AuthField, authButtonClasses, authInputClasses } from "../../components/AuthLayout";
@@ -14,7 +18,13 @@ const REASON_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-export function ReportReviewModal({ reviewId, onClose }: { reviewId: string; onClose: () => void }) {
+export function ReportReviewModal({
+  reviewId,
+  onClose,
+}: {
+  reviewId: string;
+  onClose: () => void;
+}) {
   const reportReview = useReportReview();
   const {
     register,

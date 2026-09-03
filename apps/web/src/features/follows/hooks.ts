@@ -1,12 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth-context";
-import {
-  fetchFollowers,
-  fetchFollowing,
-  fetchIsFollowing,
-  followUser,
-  unfollowUser,
-} from "./api";
+import { fetchFollowers, fetchFollowing, fetchIsFollowing, followUser, unfollowUser } from "./api";
 
 export const followersQueryKey = (userId: string) => ["follows", "followers", userId] as const;
 export const followingQueryKey = (userId: string) => ["follows", "following", userId] as const;

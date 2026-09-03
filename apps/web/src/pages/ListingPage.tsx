@@ -108,7 +108,11 @@ export function ListingPage() {
       </div>
 
       {showReport && (
-        <ReportDialog targetType="listing" targetId={listing.id} onClose={() => setShowReport(false)} />
+        <ReportDialog
+          targetType="listing"
+          targetId={listing.id}
+          onClose={() => setShowReport(false)}
+        />
       )}
 
       <div className="mt-2 flex flex-wrap gap-2 text-xs">

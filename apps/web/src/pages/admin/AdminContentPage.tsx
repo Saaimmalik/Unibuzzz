@@ -81,7 +81,9 @@ function PostsTab() {
             )}
           </li>
         ))}
-        {posts?.length === 0 && <li className="px-4 py-6 text-center text-sm text-stone-400">No posts found.</li>}
+        {posts?.length === 0 && (
+          <li className="px-4 py-6 text-center text-sm text-stone-400">No posts found.</li>
+        )}
       </ul>
     </div>
   );
@@ -166,10 +168,18 @@ export function AdminContentPage() {
     <div className="mx-auto max-w-3xl space-y-4">
       <h1 className="text-lg font-bold text-brand-ink">Content</h1>
       <div className="flex gap-1 rounded-full bg-stone-100 p-1 w-fit">
-        <button type="button" onClick={() => setTab("posts")} className={tabClasses(tab === "posts")}>
+        <button
+          type="button"
+          onClick={() => setTab("posts")}
+          className={tabClasses(tab === "posts")}
+        >
           Posts
         </button>
-        <button type="button" onClick={() => setTab("comments")} className={tabClasses(tab === "comments")}>
+        <button
+          type="button"
+          onClick={() => setTab("comments")}
+          className={tabClasses(tab === "comments")}
+        >
           Comments
         </button>
       </div>

@@ -25,7 +25,9 @@ export function NotificationsPage() {
 
       {isLoading && <p className="py-8 text-center text-sm text-stone-400">Loading…</p>}
       {isError && (
-        <p className="py-8 text-center text-sm text-red-600">Couldn't load notifications. Try refreshing.</p>
+        <p className="py-8 text-center text-sm text-red-600">
+          Couldn't load notifications. Try refreshing.
+        </p>
       )}
 
       {notifications && notifications.length === 0 && (
