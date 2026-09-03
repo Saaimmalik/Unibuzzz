@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
+import { BrandLogo } from "./BrandLogo";
 
 const navItems = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -43,7 +44,7 @@ export function AdminLayout() {
       <aside className="hidden w-64 shrink-0 border-r border-stone-200 bg-white p-4 md:flex md:flex-col">
         <div className="px-2 py-3">
           <Link to="/admin" className="flex items-center gap-2">
-            <img src="/brand/bee-logo.png" alt="" className="h-8 w-8" />
+            <BrandLogo className="h-8 w-8" />
             <div>
               <p className="text-base font-extrabold leading-tight tracking-tight">UniBuzzz</p>
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-purple">
@@ -55,7 +56,12 @@ export function AdminLayout() {
 
         <nav className="mt-4 flex flex-1 flex-col gap-1">
           {navItems.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className={({ isActive }) => navLinkClasses(isActive)}>
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) => navLinkClasses(isActive)}
+            >
               <Icon size={18} strokeWidth={2} />
               {label}
             </NavLink>

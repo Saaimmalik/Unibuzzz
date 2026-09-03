@@ -6,11 +6,29 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Moved out of index.css's @import: a CSS @import blocks that
+         stylesheet's own parsing until it resolves, chaining
+         html -> app css -> googleapis css -> gstatic font serially. A
+         preconnect plus a normal <link> lets the browser discover and fetch
+         it in parallel with everything else instead (~220ms saved per a
+         Lighthouse pass during PWA polish). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
     <meta name="theme-color" content="#F6BA24" />
     <meta
       name="description"
       content="UniBuzzz — the university-only social platform for feed posts, communities, marketplace, and professor/course reviews."
     />
+    <!-- iOS has no manifest-driven install UI — these are what actually
+         control "Add to Home Screen" behavior on Safari. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="UniBuzzz" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>UniBuzzz</title>
   </head>
   <body>

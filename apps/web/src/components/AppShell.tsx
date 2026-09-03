@@ -1,8 +1,21 @@
 import { isStaffRole } from "@unibuzzz/shared";
-import { Bell, Home, MessageCircle, Search, Shield, ShoppingBag, Star, User, Users } from "lucide-react";
+import {
+  Bell,
+  Home,
+  MessageCircle,
+  Search,
+  Shield,
+  ShoppingBag,
+  Star,
+  User,
+  Users,
+} from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useUnreadNotificationsCount } from "../features/notifications/hooks";
 import { useAuth } from "../lib/auth-context";
+import { BrandLogo } from "./BrandLogo";
+import { InstallPrompt } from "./InstallPrompt";
+import { PwaUpdatePrompt } from "./PwaUpdatePrompt";
 
 const navItems = [
   { to: "/", label: "Feed", icon: Home, end: true },
@@ -42,7 +55,7 @@ export function AppShell() {
       <aside className="hidden w-64 shrink-0 border-r border-stone-200 bg-white p-4 md:flex md:flex-col">
         <div className="flex items-center justify-between px-2 py-3">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/brand/bee-logo.png" alt="" className="h-9 w-9" />
+            <BrandLogo className="h-9 w-9" />
             <span className="text-lg font-extrabold tracking-tight">UniBuzzz</span>
           </Link>
           <div className="flex items-center gap-0.5">
@@ -107,7 +120,7 @@ export function AppShell() {
       {/* Mobile top bar */}
       <header className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3 md:hidden">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/brand/bee-logo.png" alt="" className="h-7 w-7" />
+          <BrandLogo className="h-7 w-7" />
           <span className="font-extrabold tracking-tight">UniBuzzz</span>
         </Link>
         <div className="flex items-center gap-1">
@@ -172,6 +185,13 @@ export function AppShell() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Mounted here (not globally) so they never overlap the short,
+          vertically-centered auth-flow screens — see InstallPrompt/
+          PwaUpdatePrompt for positioning tuned around this shell's own
+          bottom tab bar. */}
+      <InstallPrompt />
+      <PwaUpdatePrompt />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+/* Inter is loaded via a <link> in index.html, not @import here — see the
+   comment there for why. */
 @import "tailwindcss";
 
 /*
@@ -36,6 +37,21 @@
  * dark regardless of theme (yellow needs dark text for contrast) — those
  * specific spots use `text-black` (a plain, non-remapped Tailwind utility)
  * instead of `text-brand-ink`, so they're unaffected by this remap.
+ *
+ * --color-brand-purple and --color-stone-400 are also remapped here (real
+ * accessibility bugs caught by a Lighthouse pass during PWA polish, not a
+ * stylistic choice):
+ * - the light-mode purple #6529c9 only hits ~2.3-2.6:1 contrast against the
+ *   dark-mode surface colors below, well under WCAG AA's 4.5:1 for text.
+ *   Remapped to #a077e3 (same hue, +0.2 lightness) — clears 4.5:1 against
+ *   both --color-white and --color-stone-50 above with margin.
+ * - the light-mode muted-text gray #71717a (used all over for secondary
+ *   text/timestamps) only hits ~3.7:1 on --color-white here, also under
+ *   4.5:1. Remapped to #888891 (same hue, +0.09 lightness) — clears 5:1+
+ *   against both surfaces while staying visibly more muted than
+ *   --color-stone-500/600.
+ * Both fixes are one-line token changes, not per-component `dark:` classes,
+ * for the same reason as everything else in this block.
  */
 .dark {
   color-scheme: dark;
@@ -44,10 +60,11 @@
   --color-stone-100: #1c1c1f;
   --color-stone-200: #2a2a2e;
   --color-stone-300: #3f3f46;
-  --color-stone-400: #71717a;
+  --color-stone-400: #888891;
   --color-stone-500: #a1a1aa;
   --color-stone-600: #d4d4d8;
   --color-brand-ink: #f4f4f5;
+  --color-brand-purple: #a077e3;
 }
 
 body {

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandLogo } from "./BrandLogo";
 
 export function AuthLayout({
   title,
@@ -12,10 +13,10 @@ export function AuthLayout({
   footer?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-stone-50 px-4 py-10">
+    <main className="flex min-h-dvh items-center justify-center bg-stone-50 px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <img src="/brand/bee-logo.png" alt="UniBuzzz" className="h-14 w-14" />
+          <BrandLogo alt="UniBuzzz" className="h-14 w-14" />
           <div>
             <h1 className="text-xl font-extrabold text-brand-ink">{title}</h1>
             {subtitle && <p className="mt-1 text-sm text-stone-500">{subtitle}</p>}
@@ -26,7 +27,7 @@ export function AuthLayout({
 
         {footer && <div className="mt-5 text-center text-sm text-stone-500">{footer}</div>}
       </div>
-    </div>
+    </main>
   );
 }
 
