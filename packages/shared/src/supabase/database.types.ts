@@ -5,7 +5,10 @@
 
 export type UniversityStatus = "active" | "coming_soon";
 export type UserRole = "student" | "moderator" | "admin";
-export type UserStatus = "active" | "suspended" | "banned";
+export type UserStatus = "active" | "suspended" | "banned" | "deactivated" | "deleted";
+export type WhoCanMessage = "everyone" | "following" | "nobody";
+export type FeedbackType = "feature_request" | "bug_report";
+export type FeedbackStatus = "open" | "in_progress" | "resolved" | "closed";
 export type ThemePreference = "light" | "dark" | "system";
 export type ReactionTargetType = "post" | "comment";
 export type ReactionType = "like" | "upvote" | "downvote";
@@ -24,10 +27,25 @@ export type EntitySubmissionType = "professor" | "course" | "community";
 export type EntitySubmissionStatus = "pending" | "approved" | "rejected" | "duplicate";
 export type ReportTargetType = "post" | "comment" | "listing" | "message" | "community" | "user";
 export type ReportReason =
-  "spam" | "harassment" | "hate_speech" | "inappropriate_content" | "scam" | "impersonation" | "other";
+  | "spam"
+  | "harassment"
+  | "hate_speech"
+  | "inappropriate_content"
+  | "scam"
+  | "impersonation"
+  | "other";
 export type ReportStatus = "pending" | "resolved" | "dismissed";
 export type NotificationType =
-  "post_like" | "post_comment" | "message" | "review_helpful" | "content_removed" | "report_resolved";
+  | "post_like"
+  | "post_comment"
+  | "message"
+  | "review_helpful"
+  | "content_removed"
+  | "report_resolved"
+  | "community_approved"
+  | "community_rejected";
+export type EmailLogCategory = "auth" | "app";
+export type EmailLogStatus = "sent" | "failed";
 
 export interface Database {
   public: {
@@ -74,6 +92,17 @@ export interface Database {
           role: UserRole;
           status: UserStatus;
           theme_preference: ThemePreference;
+          follower_count: number;
+          following_count: number;
+          who_can_message: WhoCanMessage;
+          hide_follow_counts: boolean;
+          email_pref_comments: boolean;
+          email_pref_likes: boolean;
+          email_pref_messages: boolean;
+          email_pref_community: boolean;
+          email_pref_marketplace: boolean;
+          email_pref_reviews: boolean;
+          email_pref_announcements: boolean;
           created_at: string;
         };
         Insert: {
@@ -91,6 +120,17 @@ export interface Database {
           role?: UserRole;
           status?: UserStatus;
           theme_preference?: ThemePreference;
+          follower_count?: number;
+          following_count?: number;
+          who_can_message?: WhoCanMessage;
+          hide_follow_counts?: boolean;
+          email_pref_comments?: boolean;
+          email_pref_likes?: boolean;
+          email_pref_messages?: boolean;
+          email_pref_community?: boolean;
+          email_pref_marketplace?: boolean;
+          email_pref_reviews?: boolean;
+          email_pref_announcements?: boolean;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>;
@@ -113,6 +153,7 @@ export interface Database {
           body: string;
           like_count: number;
           comment_count: number;
+          is_anonymous: boolean;
           created_at: string;
           deleted_at: string | null;
         };
@@ -124,6 +165,7 @@ export interface Database {
           body: string;
           like_count?: number;
           comment_count?: number;
+          is_anonymous?: boolean;
           created_at?: string;
           deleted_at?: string | null;
         };
@@ -178,6 +220,7 @@ export interface Database {
           parent_comment_id: string | null;
           author_id: string;
           body: string;
+          is_anonymous: boolean;
           created_at: string;
           deleted_at: string | null;
         };
@@ -187,6 +230,7 @@ export interface Database {
           parent_comment_id?: string | null;
           author_id: string;
           body: string;
+          is_anonymous?: boolean;
           created_at?: string;
           deleted_at?: string | null;
         };
@@ -276,6 +320,37 @@ export interface Database {
             columns: ["community_id"];
             isOneToOne: false;
             referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      follows: {
+        Row: {
+          follower_id: string;
+          following_id: string;
+          university_id: string;
+          created_at: string;
+        };
+        Insert: {
+          follower_id: string;
+          following_id: string;
+          university_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["follows"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -568,6 +643,7 @@ export interface Database {
           workload_rating: number | null;
           teaching_rating: number | null;
           taught_by_professor_id: string | null;
+          alternate_professor_name: string | null;
           created_at: string;
         };
         Insert: {
@@ -589,6 +665,7 @@ export interface Database {
           workload_rating?: number | null;
           teaching_rating?: number | null;
           taught_by_professor_id?: string | null;
+          alternate_professor_name?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>;
@@ -762,6 +839,90 @@ export interface Database {
           },
         ];
       };
+      blocked_users: {
+        Row: {
+          blocker_id: string;
+          blocked_id: string;
+          university_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocker_id: string;
+          blocked_id: string;
+          university_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["blocked_users"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "blocked_users_blocked_id_fkey";
+            columns: ["blocked_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feedback: {
+        Row: {
+          id: string;
+          university_id: string;
+          user_id: string;
+          type: FeedbackType;
+          subject: string;
+          body: string;
+          status: FeedbackStatus;
+          admin_note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          user_id: string;
+          type: FeedbackType;
+          subject: string;
+          body: string;
+          status?: FeedbackStatus;
+          admin_note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["feedback"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "feedback_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_log: {
+        Row: {
+          id: string;
+          created_at: string;
+          category: EmailLogCategory;
+          event_type: string;
+          recipient_email: string;
+          status: EmailLogStatus;
+          error_message: string | null;
+          provider_message_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          category: EmailLogCategory;
+          event_type: string;
+          recipient_email: string;
+          status: EmailLogStatus;
+          error_message?: string | null;
+          provider_message_id?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["email_log"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -781,6 +942,18 @@ export interface Database {
         Args: { p_username: string };
         Returns: boolean;
       };
+      deactivate_own_account: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
+      reactivate_own_account: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
+      delete_own_account: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
       admin_review_entity_submission: {
         Args: { p_submission_id: string; p_decision: string; p_merge_into_id?: string | null };
         Returns: string | null;
@@ -792,6 +965,18 @@ export interface Database {
       course_teaching_ratings: {
         Args: { p_course_id: string };
         Returns: { professor_id: string; avg_teaching: number; rating_count: number }[];
+      };
+      review_alternate_teacher_mentions: {
+        Args: Record<string, never>;
+        Returns: {
+          course_id: string;
+          course_code: string;
+          course_title: string;
+          course_slug: string;
+          mentioned_name: string;
+          mention_count: number;
+          latest_mentioned_at: string;
+        }[];
       };
     };
   };

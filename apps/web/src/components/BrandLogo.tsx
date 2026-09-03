@@ -9,9 +9,15 @@
 // costing ~140KB of wasted bytes on every page that shows the logo.
 export function BrandLogo({ className, alt = "" }: { className?: string; alt?: string }) {
   return (
-    <picture>
+    <picture className="inline-block shrink-0 leading-none">
       <source srcSet="/brand/bee-logo-sm.webp" type="image/webp" />
-      <img src="/brand/bee-logo-sm.png" alt={alt} className={className} />
+      <img
+        src="/brand/bee-logo-sm.png"
+        alt={alt}
+        width={192}
+        height={192}
+        className={`shrink-0 object-contain ${className ?? ""}`}
+      />
     </picture>
   );
 }

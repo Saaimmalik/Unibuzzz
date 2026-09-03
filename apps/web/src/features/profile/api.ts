@@ -1,6 +1,30 @@
 import { supabase } from "../../lib/supabase";
+import { POST_SELECT, hydratePosts, type FeedPost } from "../feed/api";
 
 const AVATAR_BUCKET = "avatars";
+
+export const userPostsQueryKey = (userId: string | undefined, limit: number) =>
+  ["posts", "user", userId, limit] as const;
+
+// RLS on `posts` already restricts what's visible (university, soft-delete
+// exemptions, restricted-community membership) — this query just filters to
+// one author and lets RLS do the rest, so it works unchanged for both the
+// viewer's own profile and someone else's.
+export async function fetchUserPosts(
+  authorId: string,
+  viewerId: string,
+  limit: number,
+): Promise<FeedPost[]> {
+  const { data: posts, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .eq("author_id", authorId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return hydratePosts(posts ?? [], viewerId);
+}
 
 export async function uploadAvatar(
   universityId: string,

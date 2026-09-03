@@ -1,10 +1,13 @@
 import type {
+  AlternateTeacherMention,
   AppUser,
   AuditLogEntry,
   CommunityStatus,
   CommunityWithMembership,
   EntitySubmission,
   EntitySubmissionType,
+  Feedback,
+  FeedbackStatus,
   ListingStatus,
   ListingWithSeller,
   Report,
@@ -97,7 +100,9 @@ export async function fetchPostsForAdmin(params: {
 }): Promise<AdminPostRow[]> {
   let q = supabase
     .from("posts")
-    .select("id,body,created_at,deleted_at,author:users!posts_author_id_fkey(id,username,display_name)")
+    .select(
+      "id,body,created_at,deleted_at,author:users!posts_author_id_fkey(id,username,display_name)",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
   if (!params.includeRemoved) q = q.is("deleted_at", null);
@@ -140,7 +145,10 @@ export async function fetchCommentsForAdmin(params: {
 }
 
 export async function moderateComment(commentId: string, deletedAt: string | null): Promise<void> {
-  const { error } = await supabase.from("comments").update({ deleted_at: deletedAt }).eq("id", commentId);
+  const { error } = await supabase
+    .from("comments")
+    .update({ deleted_at: deletedAt })
+    .eq("id", commentId);
   if (error) throw error;
 }
 
@@ -157,6 +165,17 @@ export async function fetchReviewsForAdmin(status?: ReviewStatus): Promise<Revie
 export async function moderateReview(reviewId: string, status: ReviewStatus): Promise<void> {
   const { error } = await supabase.from("reviews").update({ status }).eq("id", reviewId);
   if (error) throw error;
+}
+
+// Courses where one or more reviewers named a teacher not linked via
+// professor_courses — see review_alternate_teacher_mentions() for why this
+// is a plain RPC (grouping isn't expressible through PostgREST) and why it
+// needs no staff-only guard of its own (relies on the reviews SELECT
+// policy, same as course_teaching_ratings).
+export async function fetchAlternateTeacherMentions(): Promise<AlternateTeacherMention[]> {
+  const { data, error } = await supabase.rpc("review_alternate_teacher_mentions");
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function fetchReviewReports(): Promise<ReviewReport[]> {
@@ -204,7 +223,9 @@ export async function fetchListingsForAdmin(params: {
 }): Promise<ListingWithSeller[]> {
   let q = supabase
     .from("listings")
-    .select("*,seller:users!listings_seller_id_fkey(id,username,display_name,avatar_url),listing_media(*)")
+    .select(
+      "*,seller:users!listings_seller_id_fkey(id,username,display_name,avatar_url),listing_media(*)",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
   if (params.status) q = q.eq("status", params.status);
@@ -225,7 +246,11 @@ export async function fetchCommunitiesForAdmin(params: {
   query: string;
   status?: CommunityStatus;
 }): Promise<CommunityWithMembership[]> {
-  let q = supabase.from("communities").select("*").order("created_at", { ascending: false }).limit(50);
+  let q = supabase
+    .from("communities")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
   if (params.status) q = q.eq("status", params.status);
   if (params.query.trim()) q = q.ilike("name", toIlikePattern(params.query));
   const { data, error } = await q;
@@ -233,14 +258,19 @@ export async function fetchCommunitiesForAdmin(params: {
   return (data ?? []).map((c) => ({ ...c, viewer_role: null }));
 }
 
-export async function moderateCommunity(communityId: string, status: CommunityStatus): Promise<void> {
+export async function moderateCommunity(
+  communityId: string,
+  status: CommunityStatus,
+): Promise<void> {
   const { error } = await supabase.from("communities").update({ status }).eq("id", communityId);
   if (error) throw error;
 }
 
 // --- Entity submissions (professor/course/community requests) --------------
 
-export async function fetchEntitySubmissions(types: EntitySubmissionType[]): Promise<EntitySubmission[]> {
+export async function fetchEntitySubmissions(
+  types: EntitySubmissionType[],
+): Promise<EntitySubmission[]> {
   const { data, error } = await supabase
     .from("entity_submissions")
     .select("*")
@@ -268,9 +298,38 @@ export async function reviewEntitySubmission(
   return data;
 }
 
+// --- Feedback (Request a Feature / Report a Bug) ----------------------------
+
+export async function fetchFeedback(status?: FeedbackStatus): Promise<Feedback[]> {
+  let q = supabase
+    .from("feedback")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (status) q = q.eq("status", status);
+  const { data, error } = await q;
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateFeedbackStatus(
+  feedbackId: string,
+  status: FeedbackStatus,
+  adminNote: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from("feedback")
+    .update({ status, admin_note: adminNote })
+    .eq("id", feedbackId);
+  if (error) throw error;
+}
+
 // --- Audit log ---------------------------------------------------------------
 
-export async function fetchAuditLog(params: { targetType?: string; limit?: number }): Promise<AuditLogEntry[]> {
+export async function fetchAuditLog(params: {
+  targetType?: string;
+  limit?: number;
+}): Promise<AuditLogEntry[]> {
   let q = supabase
     .from("audit_log")
     .select("*")
@@ -303,7 +362,10 @@ export async function fetchOverviewStats(): Promise<AdminOverviewStats> {
   const [pendingReports, pendingCommunityRequests, pendingAcademicSubmissions, recentAuditLog] =
     await Promise.all([
       countRows(
-        supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase
+          .from("reports")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "pending"),
       ),
       countRows(
         supabase

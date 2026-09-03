@@ -109,13 +109,14 @@ export function useCreateCommunityPost(communityId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { body: string; image?: File | null }) =>
+    mutationFn: (input: { body: string; image?: File | null; isAnonymous?: boolean }) =>
       createPost({
         universityId: appUser!.university_id,
         authorId: appUser!.id,
         communityId,
         body: input.body,
         image: input.image,
+        isAnonymous: input.isAnonymous,
       }),
     onSuccess: () =>
       void queryClient.invalidateQueries({ queryKey: communityPostsQueryKey(communityId) }),

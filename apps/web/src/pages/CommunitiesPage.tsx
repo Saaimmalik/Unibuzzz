@@ -42,7 +42,7 @@ export function CommunitiesPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-4 px-4 py-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-bold text-brand-ink">Communities</h1>
         <button
           type="button"
@@ -50,10 +50,10 @@ export function CommunitiesPage() {
             setSubmitted(false);
             setIsCreating((v) => !v);
           }}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-black hover:bg-brand-orange"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-yellow px-3 py-1.5 text-sm font-semibold text-black hover:bg-brand-orange"
         >
           <Plus size={16} />
-          Create
+          Request New Community
         </button>
       </div>
 
@@ -91,7 +91,7 @@ export function CommunitiesPage() {
             </p>
           )}
           <button type="submit" disabled={isSubmitting} className={authButtonClasses}>
-            {isSubmitting ? "Creating…" : "Create community"}
+            {isSubmitting ? "Requesting…" : "Request new community"}
           </button>
         </form>
       )}

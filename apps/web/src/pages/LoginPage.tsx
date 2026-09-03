@@ -9,12 +9,24 @@ import {
   authButtonClasses,
   authInputClasses,
 } from "../components/AuthLayout";
+import { DELETED_ACCOUNT_NOTICE_KEY } from "../lib/AuthProvider";
 import { supabase } from "../lib/supabase";
+
+function readAndClearDeletedNotice(): boolean {
+  try {
+    if (localStorage.getItem(DELETED_ACCOUNT_NOTICE_KEY) !== "1") return false;
+    localStorage.removeItem(DELETED_ACCOUNT_NOTICE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [formError, setFormError] = useState<string | null>(null);
+  const [showDeletedNotice] = useState(readAndClearDeletedNotice);
   const {
     register,
     handleSubmit,
@@ -45,6 +57,12 @@ export function LoginPage() {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        {showDeletedNotice && (
+          <p className="rounded-lg bg-stone-100 px-3 py-2 text-sm text-stone-600">
+            Your account was deleted. You can create a new account any time.
+          </p>
+        )}
+
         <AuthField label="Email" error={errors.email?.message}>
           <input
             type="email"

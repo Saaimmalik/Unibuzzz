@@ -6,6 +6,9 @@ export type {
   Database,
   UserRole,
   UserStatus,
+  WhoCanMessage,
+  FeedbackType,
+  FeedbackStatus,
   ReactionType,
   ReactionTargetType,
   CommunityType,
@@ -32,4 +35,6 @@ export * from "./schemas/message";
 export * from "./schemas/listing";
 export * from "./schemas/review";
 export * from "./schemas/report";
+export * from "./schemas/feedback";
+export * from "./schemas/settings";
 export * from "./format";

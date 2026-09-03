@@ -2,7 +2,8 @@ import type { UserSearchResult } from "@unibuzzz/shared";
 import { toIlikePattern } from "../../lib/search";
 import { supabase } from "../../lib/supabase";
 
-const USER_SELECT = "id,username,display_name,avatar_url,email,degree";
+const USER_SELECT =
+  "id,username,display_name,avatar_url,email,degree,follower_count,following_count,hide_follow_counts";
 
 // Three separate single-column queries (rather than one .or(...) filter)
 // so a query containing a comma or parenthesis — which are meaningful in

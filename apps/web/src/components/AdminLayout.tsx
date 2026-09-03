@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  MessageSquareText,
   ShoppingBag,
   Star,
   Users,
@@ -23,6 +24,7 @@ const navItems = [
   { to: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/admin/communities", label: "Communities", icon: UsersRound },
   { to: "/admin/academics", label: "Academics", icon: GraduationCap },
+  { to: "/admin/feedback", label: "Feedback", icon: MessageSquareText },
   { to: "/admin/audit-log", label: "Audit log", icon: ClipboardList },
 ];
 

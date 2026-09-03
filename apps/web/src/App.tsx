@@ -21,13 +21,23 @@ import { PublicProfilePage } from "./pages/PublicProfilePage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { SearchPage } from "./pages/SearchPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
+import { CookiePolicyPage } from "./pages/legal/CookiePolicyPage";
+import { PrivacyPolicyPage } from "./pages/legal/PrivacyPolicyPage";
+import { TermsOfServicePage } from "./pages/legal/TermsOfServicePage";
+import { BlockedUsersPage } from "./pages/settings/BlockedUsersPage";
+import { ChangePasswordPage } from "./pages/settings/ChangePasswordPage";
+import { EmailPreferencesPage } from "./pages/settings/EmailPreferencesPage";
+import { PrivacySettingsPage } from "./pages/settings/PrivacySettingsPage";
 
 // Lazy-loaded so none of the admin dashboard's code ships in the bundle a
 // regular student downloads — the only deviation from this file's otherwise
 // eager routing, scoped deliberately to just this tree.
-const AdminLayout = lazy(() => import("./components/AdminLayout").then((m) => ({ default: m.AdminLayout })));
+const AdminLayout = lazy(() =>
+  import("./components/AdminLayout").then((m) => ({ default: m.AdminLayout })),
+);
 const AdminOverviewPage = lazy(() =>
   import("./pages/admin/AdminOverviewPage").then((m) => ({ default: m.AdminOverviewPage })),
 );
@@ -55,6 +65,9 @@ const AdminAcademicsPage = lazy(() =>
 const AdminAuditLogPage = lazy(() =>
   import("./pages/admin/AdminAuditLogPage").then((m) => ({ default: m.AdminAuditLogPage })),
 );
+const AdminFeedbackPage = lazy(() =>
+  import("./pages/admin/AdminFeedbackPage").then((m) => ({ default: m.AdminFeedbackPage })),
+);
 
 function AdminSuspense() {
   return (
@@ -79,6 +92,7 @@ function App() {
             <Route path="/admin/communities" element={<AdminCommunitiesPage />} />
             <Route path="/admin/academics" element={<AdminAcademicsPage />} />
             <Route path="/admin/audit-log" element={<AdminAuditLogPage />} />
+            <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
           </Route>
         </Route>
 
@@ -96,6 +110,11 @@ function App() {
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/messages/:conversationId" element={<ConversationPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/change-password" element={<ChangePasswordPage />} />
+          <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
+          <Route path="/settings/blocked-users" element={<BlockedUsersPage />} />
+          <Route path="/settings/email-preferences" element={<EmailPreferencesPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
         </Route>
@@ -109,6 +128,13 @@ function App() {
 
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+      {/* Reachable whether signed in or not — linked from Profile and from
+          the signup form, neither of which should require an active
+          session. */}
+      <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/legal/cookies" element={<CookiePolicyPage />} />
+      <Route path="/legal/terms" element={<TermsOfServicePage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createPostSchema, type CreatePostInput } from "@unibuzzz/shared";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, VenetianMask, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Avatar } from "../../components/Avatar";
@@ -14,6 +14,7 @@ export function PostComposer({ communityId }: { communityId?: string } = {}) {
   const createCommunityPost = useCreateCommunityPost(communityId ?? "");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -38,12 +39,13 @@ export function PostComposer({ communityId }: { communityId?: string } = {}) {
 
   async function onSubmit(values: CreatePostInput) {
     if (communityId) {
-      await createCommunityPost.mutateAsync({ body: values.body, image });
+      await createCommunityPost.mutateAsync({ body: values.body, image, isAnonymous });
     } else {
-      await createPost.mutateAsync({ body: values.body, image });
+      await createPost.mutateAsync({ body: values.body, image, isAnonymous });
     }
     reset();
     clearImage();
+    setIsAnonymous(false);
   }
 
   return (
@@ -83,14 +85,30 @@ export function PostComposer({ communityId }: { communityId?: string } = {}) {
         )}
 
         <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-stone-500 hover:bg-stone-100 hover:text-brand-purple"
-          >
-            <ImagePlus size={18} />
-            Photo
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-stone-500 hover:bg-stone-100 hover:text-brand-purple"
+            >
+              <ImagePlus size={18} />
+              Photo
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAnonymous((v) => !v)}
+              aria-pressed={isAnonymous}
+              title="Post anonymously — your name and photo won't be shown to other students"
+              className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm ${
+                isAnonymous
+                  ? "bg-brand-purple/10 text-brand-purple"
+                  : "text-stone-500 hover:bg-stone-100 hover:text-brand-purple"
+              }`}
+            >
+              <VenetianMask size={18} />
+              Anonymous
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"

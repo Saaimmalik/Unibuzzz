@@ -87,10 +87,20 @@ export function ReviewCard({
 
       {review.taught_by_professor_id && review.teaching_rating !== null && (
         <p className="mt-2 text-xs text-stone-500">
-          Taught by <span className="font-medium text-brand-ink">
+          Taught by{" "}
+          <span className="font-medium text-brand-ink">
             {professorNames[review.taught_by_professor_id] ?? "a listed professor"}
           </span>{" "}
           · rated {review.teaching_rating}/5 for teaching
+        </p>
+      )}
+
+      {review.alternate_professor_name && (
+        <p className="mt-2 text-xs text-stone-500">
+          Taught by{" "}
+          <span className="font-medium text-brand-ink">{review.alternate_professor_name}</span>{" "}
+          <span className="text-stone-400">(not listed for this module)</span>
+          {review.teaching_rating !== null && ` · rated ${review.teaching_rating}/5 for teaching`}
         </p>
       )}
 
@@ -109,7 +119,9 @@ export function ReviewCard({
             }
             disabled={review.is_own || toggleHelpful.isPending}
             className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors disabled:opacity-40 ${
-              review.viewer_has_voted ? "text-brand-purple" : "text-stone-500 hover:text-brand-purple"
+              review.viewer_has_voted
+                ? "text-brand-purple"
+                : "text-stone-500 hover:text-brand-purple"
             }`}
           >
             <ThumbsUp size={14} fill={review.viewer_has_voted ? "currentColor" : "none"} />
@@ -129,7 +141,9 @@ export function ReviewCard({
         </div>
       )}
 
-      {isReporting && <ReportReviewModal reviewId={review.id} onClose={() => setIsReporting(false)} />}
+      {isReporting && (
+        <ReportReviewModal reviewId={review.id} onClose={() => setIsReporting(false)} />
+      )}
     </article>
   );
 }

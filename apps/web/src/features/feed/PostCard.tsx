@@ -36,9 +36,17 @@ export function PostCard({
         <div className="flex gap-3">
           <Avatar displayName={post.author.display_name} avatarUrl={post.author.avatar_url} />
           <div>
-            <p className="text-sm font-semibold text-brand-ink">{post.author.display_name}</p>
+            <p className="text-sm font-semibold text-brand-ink">
+              {post.author.display_name}
+              {post.is_anonymous && isOwnPost && (
+                <span className="ml-1.5 text-xs font-medium text-brand-purple">
+                  (posted anonymously)
+                </span>
+              )}
+            </p>
             <p className="text-xs text-stone-500">
-              @{post.author.username} · {formatRelativeTime(post.created_at)}
+              {!post.is_anonymous && `@${post.author.username} · `}
+              {formatRelativeTime(post.created_at)}
             </p>
           </div>
         </div>

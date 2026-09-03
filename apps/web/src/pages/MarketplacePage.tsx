@@ -5,12 +5,18 @@ import {
   LISTING_CONDITIONS,
   type CreateListingInput,
 } from "@unibuzzz/shared";
-import { ImagePlus, Plus, Tag, X } from "lucide-react";
+import { ImagePlus, Plus, Search as SearchIcon, Tag, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthField, authButtonClasses, authInputClasses } from "../components/AuthLayout";
-import { useCreateListing, useListings, useMyListings } from "../features/marketplace/hooks";
+import {
+  useCreateListing,
+  useListingSearch,
+  useListings,
+  useMyListings,
+} from "../features/marketplace/hooks";
+import { useDebouncedValue } from "../lib/useDebouncedValue";
 
 const CATEGORY_LABELS: Record<string, string> = {
   textbooks: "Textbooks",
@@ -33,11 +39,20 @@ export function MarketplacePage() {
   const [isCreating, setIsCreating] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const debouncedQuery = useDebouncedValue(query, 300);
+  const isSearching = tab === "browse" && debouncedQuery.trim().length >= 2;
 
   const browseQuery = useListings(category as CreateListingInput["category"] | undefined);
   const mineQuery = useMyListings();
-  const { data: listings, isLoading } = tab === "browse" ? browseQuery : mineQuery;
+  const searchQuery = useListingSearch(debouncedQuery);
+  const { data: listings, isLoading } = isSearching
+    ? searchQuery
+    : tab === "browse"
+      ? browseQuery
+      : mineQuery;
 
   const createListing = useCreateListing();
   const {
@@ -206,33 +221,59 @@ export function MarketplacePage() {
       </div>
 
       {tab === "browse" && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCategory(undefined)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
-          >
-            All
-          </button>
-          {LISTING_CATEGORIES.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCategory(c)}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
-            >
-              {CATEGORY_LABELS[c]}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="relative">
+            <SearchIcon
+              size={18}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search listings…"
+              className="w-full rounded-full border border-stone-300 bg-white py-2.5 pl-10 pr-4 text-sm text-brand-ink placeholder:text-stone-400 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/20"
+            />
+          </div>
+
+          {!isSearching && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setCategory(undefined)}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+              >
+                All
+              </button>
+              {LISTING_CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+                >
+                  {CATEGORY_LABELS[c]}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {isSearching && query.trim().length < 2 && (
+        <p className="py-8 text-center text-sm text-stone-400">
+          Keep typing — search needs 2+ characters.
+        </p>
       )}
 
       {isLoading && <p className="py-8 text-center text-sm text-stone-400">Loading listings…</p>}
       {!isLoading && listings?.length === 0 && (
         <p className="py-8 text-center text-sm text-stone-400">
-          {tab === "mine"
-            ? "You haven't listed anything yet."
-            : "No listings yet — be the first to sell something 🐝"}
+          {isSearching
+            ? "No listings match that search."
+            : tab === "mine"
+              ? "You haven't listed anything yet."
+              : "No listings yet — be the first to sell something 🐝"}
         </p>
       )}
 

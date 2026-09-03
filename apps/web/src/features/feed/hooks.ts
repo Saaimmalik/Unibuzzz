@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/
 import { useEffect } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { supabase } from "../../lib/supabase";
+import { fetchFollowingIds } from "../follows/api";
 import {
   POSTS_QUERY_KEY,
   clearReaction,
@@ -10,12 +11,19 @@ import {
   createComment,
   createPost,
   fetchComments,
+  fetchFollowingPosts,
   fetchPostById,
   fetchPosts,
+  searchCommunityPosts,
+  searchFeedPosts,
   setReaction,
   softDeletePost,
   type FeedPost,
 } from "./api";
+
+const SEARCH_MIN_QUERY_LENGTH = 2;
+
+export const FOLLOWING_POSTS_QUERY_KEY = ["posts", "following"] as const;
 
 export const postQueryKey = (postId: string) => ["posts", "single", postId] as const;
 
@@ -62,17 +70,82 @@ export function usePostsFeed() {
   return query;
 }
 
+export function useFollowingPostsFeed() {
+  const { appUser } = useAuth();
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: FOLLOWING_POSTS_QUERY_KEY,
+    queryFn: async () => {
+      const followingIds = await fetchFollowingIds(appUser!.id);
+      return fetchFollowingPosts(followingIds, appUser!.id);
+    },
+    enabled: !!appUser,
+  });
+
+  useEffect(() => {
+    if (!appUser) return;
+
+    const channel = supabase
+      .channel("posts-following-feed")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "posts",
+          filter: `university_id=eq.${appUser.university_id}`,
+        },
+        () => void queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY }),
+      )
+      .subscribe();
+
+    return () => void supabase.removeChannel(channel);
+  }, [appUser, queryClient]);
+
+  return query;
+}
+
+export const feedSearchQueryKey = (query: string) =>
+  ["search", "feed-posts", query.trim()] as const;
+
+export function useFeedPostSearch(query: string) {
+  const { appUser } = useAuth();
+  const trimmed = query.trim();
+
+  return useQuery({
+    queryKey: feedSearchQueryKey(trimmed),
+    queryFn: () => searchFeedPosts(trimmed, appUser!.id),
+    enabled: !!appUser && trimmed.length >= SEARCH_MIN_QUERY_LENGTH,
+  });
+}
+
+export const communitySearchQueryKey = (communityId: string, query: string) =>
+  ["search", "community-posts", communityId, query.trim()] as const;
+
+export function useCommunityPostSearch(communityId: string, query: string) {
+  const { appUser } = useAuth();
+  const trimmed = query.trim();
+
+  return useQuery({
+    queryKey: communitySearchQueryKey(communityId, trimmed),
+    queryFn: () => searchCommunityPosts(trimmed, communityId, appUser!.id),
+    enabled: !!appUser && !!communityId && trimmed.length >= SEARCH_MIN_QUERY_LENGTH,
+  });
+}
+
 export function useCreatePost() {
   const { appUser } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { body: string; image?: File | null }) =>
+    mutationFn: (input: { body: string; image?: File | null; isAnonymous?: boolean }) =>
       createPost({
         universityId: appUser!.university_id,
         authorId: appUser!.id,
         body: input.body,
         image: input.image,
+        isAnonymous: input.isAnonymous,
       }),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY }),
   });
@@ -161,12 +234,13 @@ export function useDeletePost(queryKey: QueryKey = POSTS_QUERY_KEY) {
 }
 
 export function useComments(postId: string, enabled: boolean) {
+  const { appUser } = useAuth();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: commentsQueryKey(postId),
-    queryFn: () => fetchComments(postId),
-    enabled,
+    queryFn: () => fetchComments(postId, appUser!.id),
+    enabled: enabled && !!appUser,
   });
 
   useEffect(() => {
@@ -192,7 +266,8 @@ export function useCreateComment(postId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: string) => createComment({ postId, authorId: appUser!.id, body }),
+    mutationFn: ({ body, isAnonymous }: { body: string; isAnonymous?: boolean }) =>
+      createComment({ postId, authorId: appUser!.id, body, isAnonymous }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: commentsQueryKey(postId) });
       void queryClient.invalidateQueries({ queryKey: ["posts"] });

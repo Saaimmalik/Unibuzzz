@@ -1,6 +1,7 @@
 import type {
   CommunityStatus,
   EntitySubmissionType,
+  FeedbackStatus,
   ListingStatus,
   ReportStatus,
   ReportTargetType,
@@ -12,10 +13,12 @@ import { isStaffRole } from "@unibuzzz/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth-context";
 import {
+  fetchAlternateTeacherMentions,
   fetchAuditLog,
   fetchCommentsForAdmin,
   fetchCommunitiesForAdmin,
   fetchEntitySubmissions,
+  fetchFeedback,
   fetchListingsForAdmin,
   fetchOverviewStats,
   fetchPostsForAdmin,
@@ -30,6 +33,7 @@ import {
   moderateReview,
   resolveReport,
   reviewEntitySubmission,
+  updateFeedbackStatus,
   updateUserRole,
   updateUserStatus,
 } from "./api";
@@ -53,7 +57,8 @@ export function useAdminUsers(params: { query: string; role?: UserRole; status?:
 export function useUpdateUserRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: UserRole }) => updateUserRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: UserRole }) =>
+      updateUserRole(userId, role),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
   });
 }
@@ -224,7 +229,46 @@ export function useReviewEntitySubmissionAdmin() {
       decision: "approve" | "reject" | "duplicate";
       mergeIntoId?: string;
     }) => reviewEntitySubmission(submissionId, decision, mergeIntoId),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin", "entity-submissions"] }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ["admin", "entity-submissions"] }),
+  });
+}
+
+// --- Alternate teacher mentions (from course reviews' "who taught you?") ---------
+
+export function useAlternateTeacherMentions() {
+  const enabled = useIsStaff();
+  return useQuery({
+    queryKey: ["admin", "alternate-teacher-mentions"],
+    queryFn: fetchAlternateTeacherMentions,
+    enabled,
+  });
+}
+
+// --- Feedback (Request a Feature / Report a Bug) --------------------------------
+
+export function useAdminFeedback(status?: FeedbackStatus) {
+  const enabled = useIsStaff();
+  return useQuery({
+    queryKey: ["admin", "feedback", status ?? "all"],
+    queryFn: () => fetchFeedback(status),
+    enabled,
+  });
+}
+
+export function useUpdateFeedbackStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      feedbackId,
+      status,
+      adminNote,
+    }: {
+      feedbackId: string;
+      status: FeedbackStatus;
+      adminNote: string | null;
+    }) => updateFeedbackStatus(feedbackId, status, adminNote),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin", "feedback"] }),
   });
 }
 

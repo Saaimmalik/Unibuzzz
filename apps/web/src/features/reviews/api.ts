@@ -16,7 +16,7 @@ import { supabase } from "../../lib/supabase";
 // viewer voted" are resolved via separate, narrowly-filtered queries (below)
 // rather than by selecting reviewer_id here.
 const REVIEW_PUBLIC_SELECT =
-  "id,university_id,target_type,target_id,rating,title,body,tags,would_recommend,helpful_count,status,flagged_pii,interest_rating,difficulty_rating,workload_rating,teaching_rating,taught_by_professor_id,created_at";
+  "id,university_id,target_type,target_id,rating,title,body,tags,would_recommend,helpful_count,status,flagged_pii,interest_rating,difficulty_rating,workload_rating,teaching_rating,taught_by_professor_id,alternate_professor_name,created_at";
 
 export type ReviewRow = Omit<Review, "reviewer_id">;
 export type ReviewSort = "recent" | "highest_rated" | "most_helpful";
@@ -71,9 +71,24 @@ export async function fetchMostReviewedCourses(limit = 10): Promise<Course[]> {
 export async function searchProfessors(query: string): Promise<Professor[]> {
   const pattern = toIlikePattern(query);
   const [byFirst, byLast, byDept] = await Promise.all([
-    supabase.from("professors").select("*").is("merged_into_id", null).ilike("first_name", pattern).limit(15),
-    supabase.from("professors").select("*").is("merged_into_id", null).ilike("last_name", pattern).limit(15),
-    supabase.from("professors").select("*").is("merged_into_id", null).ilike("department", pattern).limit(15),
+    supabase
+      .from("professors")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("first_name", pattern)
+      .limit(15),
+    supabase
+      .from("professors")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("last_name", pattern)
+      .limit(15),
+    supabase
+      .from("professors")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("department", pattern)
+      .limit(15),
   ]);
 
   const byId = new Map<string, Professor>();
@@ -87,9 +102,24 @@ export async function searchProfessors(query: string): Promise<Professor[]> {
 export async function searchCourses(query: string): Promise<Course[]> {
   const pattern = toIlikePattern(query);
   const [byCode, byTitle, byDept] = await Promise.all([
-    supabase.from("courses").select("*").is("merged_into_id", null).ilike("code", pattern).limit(15),
-    supabase.from("courses").select("*").is("merged_into_id", null).ilike("title", pattern).limit(15),
-    supabase.from("courses").select("*").is("merged_into_id", null).ilike("department", pattern).limit(15),
+    supabase
+      .from("courses")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("code", pattern)
+      .limit(15),
+    supabase
+      .from("courses")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("title", pattern)
+      .limit(15),
+    supabase
+      .from("courses")
+      .select("*")
+      .is("merged_into_id", null)
+      .ilike("department", pattern)
+      .limit(15),
   ]);
 
   const byId = new Map<string, Course>();
@@ -125,7 +155,9 @@ export async function fetchCourseBySlug(slug: string): Promise<CourseWithProfess
 // Teaching ratings scoped to this specific module (see course_teaching_ratings
 // in 20260902270500_course_review_detail.sql) — deliberately separate from a
 // professor's own overall avg_rating on their professor page.
-export async function fetchCourseTeachingRatings(courseId: string): Promise<CourseTeachingRating[]> {
+export async function fetchCourseTeachingRatings(
+  courseId: string,
+): Promise<CourseTeachingRating[]> {
   const { data, error } = await supabase.rpc("course_teaching_ratings", { p_course_id: courseId });
   if (error) throw error;
   return data ?? [];
@@ -204,6 +236,7 @@ export async function createReview(input: {
   workloadRating?: number | null;
   teachingRating?: number | null;
   taughtByProfessorId?: string | null;
+  alternateProfessorName?: string | null;
 }): Promise<string> {
   const { data, error } = await supabase
     .from("reviews")
@@ -221,6 +254,7 @@ export async function createReview(input: {
       workload_rating: input.workloadRating ?? null,
       teaching_rating: input.teachingRating ?? null,
       taught_by_professor_id: input.taughtByProfessorId ?? null,
+      alternate_professor_name: input.alternateProfessorName ?? null,
     })
     .select("id")
     .single();
@@ -234,7 +268,9 @@ export async function removeOwnReview(id: string): Promise<void> {
 }
 
 export async function voteReviewHelpful(reviewId: string, userId: string): Promise<void> {
-  const { error } = await supabase.from("review_votes").insert({ review_id: reviewId, user_id: userId });
+  const { error } = await supabase
+    .from("review_votes")
+    .insert({ review_id: reviewId, user_id: userId });
   if (error) throw error;
 }
 
@@ -275,7 +311,11 @@ export async function suggestProfessor(input: {
       university_id: input.universityId,
       submitted_by: input.submittedBy,
       type: "professor",
-      payload: { first_name: input.firstName, last_name: input.lastName, department: input.department },
+      payload: {
+        first_name: input.firstName,
+        last_name: input.lastName,
+        department: input.department,
+      },
     })
     .select("id")
     .single();

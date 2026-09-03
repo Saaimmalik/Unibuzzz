@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createCommentSchema, formatRelativeTime, type CreateCommentInput } from "@unibuzzz/shared";
-import { Flag } from "lucide-react";
+import { Flag, VenetianMask } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Avatar } from "../../components/Avatar";
@@ -13,6 +13,7 @@ export function CommentSection({ postId }: { postId: string }) {
   const { data: comments, isLoading } = useComments(postId, true);
   const createComment = useCreateComment(postId);
   const [reportingCommentId, setReportingCommentId] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const {
     register,
@@ -22,8 +23,9 @@ export function CommentSection({ postId }: { postId: string }) {
   } = useForm<CreateCommentInput>({ resolver: zodResolver(createCommentSchema) });
 
   async function onSubmit(values: CreateCommentInput) {
-    await createComment.mutateAsync(values.body);
+    await createComment.mutateAsync({ body: values.body, isAnonymous });
     reset();
+    setIsAnonymous(false);
   }
 
   return (
@@ -42,6 +44,11 @@ export function CommentSection({ postId }: { postId: string }) {
               <div className="min-w-0">
                 <span className="font-semibold text-brand-ink">{comment.author.display_name}</span>{" "}
                 <span className="text-stone-500">· {formatRelativeTime(comment.created_at)}</span>
+                {comment.is_anonymous && comment.author_id === appUser?.id && (
+                  <span className="ml-1 text-xs font-medium text-brand-purple">
+                    (posted anonymously)
+                  </span>
+                )}
                 <p className="text-brand-ink">{comment.body}</p>
               </div>
               {comment.author_id !== appUser?.id && (
@@ -79,6 +86,19 @@ export function CommentSection({ postId }: { postId: string }) {
           className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-sm text-brand-ink placeholder:text-stone-400 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/20"
           {...register("body")}
         />
+        <button
+          type="button"
+          onClick={() => setIsAnonymous((v) => !v)}
+          aria-pressed={isAnonymous}
+          title="Comment anonymously — your name and photo won't be shown to other students"
+          className={`shrink-0 rounded-full p-1.5 ${
+            isAnonymous
+              ? "bg-brand-purple/10 text-brand-purple"
+              : "text-stone-400 hover:bg-stone-100 hover:text-brand-purple"
+          }`}
+        >
+          <VenetianMask size={16} />
+        </button>
         <button
           type="submit"
           disabled={isSubmitting}

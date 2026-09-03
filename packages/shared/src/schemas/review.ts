@@ -18,21 +18,42 @@ export const REVIEW_REPORT_REASONS = [
 // "not rated" (StarRating starts at 0 for these, unlike the required
 // overall `rating` which starts at 5); the API layer converts 0 -> null
 // before sending, since the DB constraint is 1-5 or null, never 0.
-export const createReviewSchema = z.object({
-  rating: z.coerce.number().int().min(1, "Pick a rating").max(5, "Pick a rating"),
-  title: z.string().trim().max(120, "That's a bit long").optional().or(z.literal("")),
-  body: z
-    .string()
-    .trim()
-    .min(15, "Say a bit more (15 characters minimum)")
-    .max(3000, "That's a bit long (3000 char max)"),
-  wouldRecommend: z.enum(["yes", "no", "unsure"]).optional(),
-  interestRating: z.coerce.number().int().min(0).max(5).optional(),
-  difficultyRating: z.coerce.number().int().min(0).max(5).optional(),
-  workloadRating: z.coerce.number().int().min(0).max(5).optional(),
-  teachingRating: z.coerce.number().int().min(0).max(5).optional(),
-  taughtByProfessorId: z.string().optional().or(z.literal("")),
-});
+//
+// taughtByProfessorId doubles as the "who taught you?" <select>'s value —
+// "", an existing professor's id, or the sentinel ALTERNATE_TEACHER_VALUE
+// meaning "someone else, see alternateProfessorName" — resolved into the
+// DB's two mutually-exclusive columns by the caller (see ReviewForm.tsx),
+// not here.
+export const ALTERNATE_TEACHER_VALUE = "__other__";
+
+export const createReviewSchema = z
+  .object({
+    rating: z.coerce.number().int().min(1, "Pick a rating").max(5, "Pick a rating"),
+    title: z.string().trim().max(120, "That's a bit long").optional().or(z.literal("")),
+    body: z
+      .string()
+      .trim()
+      .min(15, "Say a bit more (15 characters minimum)")
+      .max(3000, "That's a bit long (3000 char max)"),
+    wouldRecommend: z.enum(["yes", "no", "unsure"]).optional(),
+    interestRating: z.coerce.number().int().min(0).max(5).optional(),
+    difficultyRating: z.coerce.number().int().min(0).max(5).optional(),
+    workloadRating: z.coerce.number().int().min(0).max(5).optional(),
+    teachingRating: z.coerce.number().int().min(0).max(5).optional(),
+    taughtByProfessorId: z.string().optional().or(z.literal("")),
+    alternateProfessorName: z
+      .string()
+      .trim()
+      .max(160, "That's a bit long")
+      .optional()
+      .or(z.literal("")),
+  })
+  .refine(
+    (data) =>
+      data.taughtByProfessorId !== ALTERNATE_TEACHER_VALUE ||
+      (data.alternateProfessorName ?? "").length >= 2,
+    { message: "Enter a name (2+ characters)", path: ["alternateProfessorName"] },
+  );
 
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 

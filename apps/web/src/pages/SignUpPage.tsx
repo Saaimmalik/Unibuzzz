@@ -141,6 +141,18 @@ export function SignUpPage() {
           </p>
         )}
 
+        <p className="text-center text-xs text-stone-500">
+          By signing up, you agree to UniBuzzz's{" "}
+          <Link to="/legal/terms" className="text-brand-purple hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/legal/privacy" className="text-brand-purple hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+
         <button type="submit" disabled={isSubmitting} className={authButtonClasses}>
           {isSubmitting ? "Creating account…" : "Sign up"}
         </button>

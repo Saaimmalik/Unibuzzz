@@ -1,6 +1,6 @@
 import type { NotificationWithActor } from "@unibuzzz/shared";
 import { formatRelativeTime } from "@unibuzzz/shared";
-import { CheckCircle2, Heart, Mail, MessageCircle, ShieldAlert, Star } from "lucide-react";
+import { CheckCircle2, Heart, Mail, MessageCircle, ShieldAlert, Star, Users, XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Avatar } from "../../components/Avatar";
 import { useMarkNotificationRead } from "./hooks";
@@ -8,6 +8,8 @@ import { useMarkNotificationRead } from "./hooks";
 const SYSTEM_ICONS = {
   content_removed: ShieldAlert,
   report_resolved: CheckCircle2,
+  community_approved: Users,
+  community_rejected: XCircle,
 } as const;
 
 function notificationText(n: NotificationWithActor): string {
@@ -28,6 +30,10 @@ function notificationText(n: NotificationWithActor): string {
       return `Your ${n.preview ?? "content"} was removed by a moderator`;
     case "report_resolved":
       return `Your report was ${n.preview ?? "resolved"}`;
+    case "community_approved":
+      return `Your community "${n.preview ?? ""}" was approved`;
+    case "community_rejected":
+      return `Your request to create "${n.preview ?? ""}" wasn't approved`;
   }
 }
 

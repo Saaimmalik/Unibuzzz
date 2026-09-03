@@ -8,6 +8,7 @@ export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 export type Reaction = Database["public"]["Tables"]["reactions"]["Row"];
 export type Community = Database["public"]["Tables"]["communities"]["Row"];
 export type CommunityMember = Database["public"]["Tables"]["community_members"]["Row"];
+export type Follow = Database["public"]["Tables"]["follows"]["Row"];
 export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
 export type Message = Database["public"]["Tables"]["messages"]["Row"];
 export type Listing = Database["public"]["Tables"]["listings"]["Row"];
@@ -21,6 +22,8 @@ export type EntitySubmission = Database["public"]["Tables"]["entity_submissions"
 export type Report = Database["public"]["Tables"]["reports"]["Row"];
 export type AuditLogEntry = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type BlockedUser = Database["public"]["Tables"]["blocked_users"]["Row"];
+export type Feedback = Database["public"]["Tables"]["feedback"]["Row"];
 
 export type PostWithAuthor = Post & {
   author: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
@@ -42,9 +45,21 @@ export type NotificationWithActor = Notification & {
   actor: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url"> | null;
 };
 
+export type BlockedUserWithProfile = BlockedUser & {
+  blocked: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
+};
+
 export type UserSearchResult = Pick<
   AppUser,
-  "id" | "username" | "display_name" | "avatar_url" | "email" | "degree"
+  | "id"
+  | "username"
+  | "display_name"
+  | "avatar_url"
+  | "email"
+  | "degree"
+  | "follower_count"
+  | "following_count"
+  | "hide_follow_counts"
 >;
 
 export type CommunityWithMembership = Community & {
@@ -75,7 +90,10 @@ export type ReviewPublic = Omit<Review, "reviewer_id"> & {
 };
 
 export type ProfessorWithCourses = Professor & {
-  professor_courses: { course: Pick<Course, "id" | "code" | "title" | "slug">; is_coordinator: boolean }[];
+  professor_courses: {
+    course: Pick<Course, "id" | "code" | "title" | "slug">;
+    is_coordinator: boolean;
+  }[];
 };
 
 export type AssessmentComponent = {
@@ -99,4 +117,17 @@ export type CourseTeachingRating = {
   professor_id: string;
   avg_teaching: number;
   rating_count: number;
+};
+
+// From the review_alternate_teacher_mentions() SQL function — courses where
+// one or more reviewers named a teacher other than a linked professor, for
+// staff to review against professor_courses (see AdminAcademicsPage).
+export type AlternateTeacherMention = {
+  course_id: string;
+  course_code: string;
+  course_title: string;
+  course_slug: string;
+  mentioned_name: string;
+  mention_count: number;
+  latest_mentioned_at: string;
 };

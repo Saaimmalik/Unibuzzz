@@ -22,8 +22,36 @@ type RawPost = Omit<PostWithAuthor, "viewer_reaction" | "post_media"> & {
   post_media: PostMedia[];
 };
 
-const POST_SELECT =
+export const POST_SELECT =
   "*, author:users!posts_author_id_fkey(id,username,display_name,avatar_url), post_media(*)";
+
+const ANONYMOUS_AUTHOR_NAME = "Anonymous";
+
+// Masks the author's identity for an anonymous post/comment, for anyone
+// but the author themselves — reuses the reviews anonymity convention
+// (author hidden from other students, always resolvable by staff via the
+// real author_id, which is left untouched here) rather than a new one. See
+// the migration comment on posts.is_anonymous for why this can't be a
+// static SELECT-column omission the way reviews.reviewer_id is: a single
+// feed/community query mixes anonymous and non-anonymous rows.
+function maskAnonymousAuthor<
+  T extends {
+    author_id: string;
+    is_anonymous: boolean;
+    author: Pick<AppUser, "id" | "username" | "display_name" | "avatar_url">;
+  },
+>(row: T, viewerId: string): T {
+  if (!row.is_anonymous || row.author_id === viewerId) return row;
+  return {
+    ...row,
+    author: {
+      id: row.author_id,
+      username: "anonymous",
+      display_name: ANONYMOUS_AUTHOR_NAME,
+      avatar_url: null,
+    },
+  };
+}
 
 // Shared by the main feed, post search, and community posts — all need the
 // same "what did the viewer react with" + "resolve signed image URLs" step.
@@ -44,11 +72,16 @@ export async function hydratePosts(rawPosts: RawPost[], viewerId: string): Promi
   const allPaths = rawPosts.flatMap((p) => p.post_media.map((m) => m.url));
   const signedUrlMap = await getSignedUrls(allPaths);
 
-  return rawPosts.map((p) => ({
-    ...p,
-    viewer_reaction: reactionMap.get(p.id) ?? null,
-    post_media: p.post_media.map((m) => ({ ...m, signedUrl: signedUrlMap.get(m.url) ?? null })),
-  }));
+  return rawPosts.map((p) =>
+    maskAnonymousAuthor(
+      {
+        ...p,
+        viewer_reaction: reactionMap.get(p.id) ?? null,
+        post_media: p.post_media.map((m) => ({ ...m, signedUrl: signedUrlMap.get(m.url) ?? null })),
+      },
+      viewerId,
+    ),
+  );
 }
 
 export async function fetchPosts(viewerId: string): Promise<FeedPost[]> {
@@ -75,6 +108,28 @@ export async function fetchPostById(postId: string, viewerId: string): Promise<F
 
   const [hydrated] = await hydratePosts([post], viewerId);
   return hydrated;
+}
+
+// Powers the Feed page's "Following" tab. Takes the followed author ids as
+// a param rather than querying `follows` itself, so this file stays
+// scoped to posts/comments — the cross-feature composition lives in
+// usePostsFollowingFeed (features/feed/hooks.ts).
+export async function fetchFollowingPosts(
+  authorIds: string[],
+  viewerId: string,
+): Promise<FeedPost[]> {
+  if (authorIds.length === 0) return [];
+
+  const { data: posts, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .in("author_id", authorIds)
+    .is("deleted_at", null)
+    .is("community_id", null)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  return hydratePosts(posts ?? [], viewerId);
 }
 
 export async function fetchCommunityPosts(
@@ -104,18 +159,55 @@ export async function searchPosts(query: string, viewerId: string): Promise<Feed
   return hydratePosts(posts ?? [], viewerId);
 }
 
+// Scoped to the main feed only (community_id is null) — used by the Feed
+// page's inline search box. searchPosts above stays the global-search
+// version (spans feed + community posts), unchanged.
+export async function searchFeedPosts(query: string, viewerId: string): Promise<FeedPost[]> {
+  const { data: posts, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .is("deleted_at", null)
+    .is("community_id", null)
+    .ilike("body", toIlikePattern(query))
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  return hydratePosts(posts ?? [], viewerId);
+}
+
+// Scoped to one community's own posts — used by CommunityPage's inline
+// search box.
+export async function searchCommunityPosts(
+  query: string,
+  communityId: string,
+  viewerId: string,
+): Promise<FeedPost[]> {
+  const { data: posts, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .is("deleted_at", null)
+    .eq("community_id", communityId)
+    .ilike("body", toIlikePattern(query))
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  return hydratePosts(posts ?? [], viewerId);
+}
+
 export async function createPost({
   universityId,
   authorId,
   communityId,
   body,
   image,
+  isAnonymous,
 }: {
   universityId: string;
   authorId: string;
   communityId?: string | null;
   body: string;
   image?: File | null;
+  isAnonymous?: boolean;
 }): Promise<void> {
   const { data: post, error } = await supabase
     .from("posts")
@@ -124,6 +216,7 @@ export async function createPost({
       author_id: authorId,
       community_id: communityId ?? null,
       body,
+      is_anonymous: isAnonymous ?? false,
     })
     .select("id")
     .single();
@@ -177,7 +270,10 @@ export async function softDeletePost(postId: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function fetchComments(postId: string): Promise<CommentWithAuthor[]> {
+export async function fetchComments(
+  postId: string,
+  viewerId: string,
+): Promise<CommentWithAuthor[]> {
   const { data, error } = await supabase
     .from("comments")
     .select("*, author:users!comments_author_id_fkey(id,username,display_name,avatar_url)")
@@ -185,20 +281,22 @@ export async function fetchComments(postId: string): Promise<CommentWithAuthor[]
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map((c) => maskAnonymousAuthor(c, viewerId));
 }
 
 export async function createComment({
   postId,
   authorId,
   body,
+  isAnonymous,
 }: {
   postId: string;
   authorId: string;
   body: string;
+  isAnonymous?: boolean;
 }): Promise<void> {
   const { error } = await supabase
     .from("comments")
-    .insert({ post_id: postId, author_id: authorId, body });
+    .insert({ post_id: postId, author_id: authorId, body, is_anonymous: isAnonymous ?? false });
   if (error) throw error;
 }

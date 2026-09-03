@@ -25,9 +25,22 @@ const navItems = [
   { to: "/notifications", label: "Alerts", icon: Bell },
 ];
 
+// Mobile bottom tab bar only — adds Profile as a 6th tab (mirrors
+// Instagram/X's convention of a bottom-tab profile slot), separate from
+// the desktop sidebar's navItems since the sidebar already has its own
+// profile card + sign-out block at the bottom (see the `<aside>` below) —
+// adding Profile to the shared navItems would duplicate it there.
+const mobileNavItems = [...navItems, { to: "/profile", label: "Profile", icon: User }];
+
 function navLinkClasses(isActive: boolean) {
   return [
-    "flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+    // Base (mobile bottom tab bar) tier only applies below the md breakpoint
+    // — the desktop sidebar is `hidden md:flex`, so it only ever renders
+    // with the md: tier active. Kept tight (px-1, 10px text) specifically
+    // because six tabs (Feed/Communities/Marketplace/Reviews/Alerts/Profile)
+    // need to fit without "Communities"/"Marketplace" pushing later tabs
+    // off-screen on a ~375-390px-wide phone.
+    "flex flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors",
     "md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm",
     isActive
       ? "text-brand-ink bg-brand-yellow/20 md:bg-brand-yellow/15"
@@ -138,13 +151,6 @@ export function AppShell() {
           >
             <MessageCircle size={22} />
           </NavLink>
-          <NavLink
-            to="/profile"
-            className="rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-brand-ink"
-            aria-label="Profile"
-          >
-            <User size={22} />
-          </NavLink>
           {isStaff && (
             <NavLink
               to="/admin"
@@ -170,7 +176,7 @@ export function AppShell() {
 
       {/* Mobile bottom tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-stone-200 bg-white/95 px-1 py-2 backdrop-blur md:hidden">
-        {navItems.map(({ to, label, icon: Icon, end }) => (
+        {mobileNavItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -178,7 +184,7 @@ export function AppShell() {
             className={({ isActive }) => navLinkClasses(isActive)}
           >
             <span className="relative">
-              <Icon size={22} strokeWidth={2} />
+              <Icon size={20} strokeWidth={2} />
               {to === "/notifications" && <NotificationBadge count={unreadCount} />}
             </span>
             {label}

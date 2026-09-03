@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createReviewSchema, type CreateReviewInput, type ReviewTargetType } from "@unibuzzz/shared";
+import {
+  ALTERNATE_TEACHER_VALUE,
+  createReviewSchema,
+  type CreateReviewInput,
+  type ReviewTargetType,
+} from "@unibuzzz/shared";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthField, authButtonClasses, authInputClasses } from "../../components/AuthLayout";
@@ -26,6 +31,7 @@ export function ReviewForm({
   const [difficultyRating, setDifficultyRating] = useState(0);
   const [workloadRating, setWorkloadRating] = useState(0);
   const [teachingRating, setTeachingRating] = useState(0);
+  const [taughtBySelection, setTaughtBySelection] = useState("");
   const {
     register,
     handleSubmit,
@@ -37,6 +43,9 @@ export function ReviewForm({
   });
 
   const isCourse = targetType === "course";
+  const isOtherTeacher = taughtBySelection === ALTERNATE_TEACHER_VALUE;
+  const hasNamedSomeone = !!taughtBySelection;
+  const taughtByProfessorField = register("taughtByProfessorId");
 
   function pick(setter: (v: number) => void, field: keyof CreateReviewInput) {
     return (value: number) => {
@@ -47,20 +56,21 @@ export function ReviewForm({
 
   async function onSubmit(values: CreateReviewInput) {
     setFormError(null);
+    const isOther = values.taughtByProfessorId === ALTERNATE_TEACHER_VALUE;
     try {
       await createReview.mutateAsync({
         rating: values.rating,
         title: values.title || null,
         body: values.body,
-        wouldRecommend:
-          values.wouldRecommend === "unsure" ? null : values.wouldRecommend === "yes",
+        wouldRecommend: values.wouldRecommend === "unsure" ? null : values.wouldRecommend === "yes",
         ...(isCourse
           ? {
               interestRating: interestRating || null,
               difficultyRating: difficultyRating || null,
               workloadRating: workloadRating || null,
               teachingRating: values.taughtByProfessorId ? teachingRating || null : null,
-              taughtByProfessorId: values.taughtByProfessorId || null,
+              taughtByProfessorId: isOther ? null : values.taughtByProfessorId || null,
+              alternateProfessorName: isOther ? values.alternateProfessorName!.trim() : null,
             }
           : {}),
       });
@@ -87,7 +97,11 @@ export function ReviewForm({
       {isCourse && (
         <div className="grid grid-cols-2 gap-3 rounded-xl bg-stone-50 p-3">
           <AuthField label="Interest">
-            <StarRating value={interestRating} onChange={pick(setInterestRating, "interestRating")} size={14} />
+            <StarRating
+              value={interestRating}
+              onChange={pick(setInterestRating, "interestRating")}
+              size={14}
+            />
           </AuthField>
           <AuthField label="Difficulty">
             <StarRating
@@ -97,28 +111,58 @@ export function ReviewForm({
             />
           </AuthField>
           <AuthField label="Workload">
-            <StarRating value={workloadRating} onChange={pick(setWorkloadRating, "workloadRating")} size={14} />
+            <StarRating
+              value={workloadRating}
+              onChange={pick(setWorkloadRating, "workloadRating")}
+              size={14}
+            />
           </AuthField>
-          {courseProfessors.length > 0 && (
+          {hasNamedSomeone && (
             <AuthField label="Teaching">
-              <StarRating value={teachingRating} onChange={pick(setTeachingRating, "teachingRating")} size={14} />
+              <StarRating
+                value={teachingRating}
+                onChange={pick(setTeachingRating, "teachingRating")}
+                size={14}
+              />
             </AuthField>
           )}
 
-          {courseProfessors.length > 0 && (
-            <div className="col-span-2">
-              <AuthField label="Who taught you? (rates their teaching for this module only)">
-                <select className={authInputClasses} {...register("taughtByProfessorId")}>
-                  <option value="">Not sure / prefer not to say</option>
-                  {courseProfessors.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.first_name} {p.last_name}
-                    </option>
-                  ))}
-                </select>
-              </AuthField>
-            </div>
-          )}
+          <div className="col-span-2">
+            <AuthField label="Who taught you? (rates their teaching for this module only)">
+              <select
+                className={authInputClasses}
+                {...taughtByProfessorField}
+                onChange={(e) => {
+                  void taughtByProfessorField.onChange(e);
+                  setTaughtBySelection(e.target.value);
+                }}
+              >
+                <option value="">Not sure / prefer not to say</option>
+                {courseProfessors.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.first_name} {p.last_name}
+                  </option>
+                ))}
+                <option value={ALTERNATE_TEACHER_VALUE}>Someone else (not listed above)</option>
+              </select>
+            </AuthField>
+            {isOtherTeacher && (
+              <div className="mt-2">
+                <AuthField label="Their name" error={errors.alternateProfessorName?.message}>
+                  <input
+                    type="text"
+                    placeholder="e.g. Dr. Jane Smith"
+                    className={authInputClasses}
+                    {...register("alternateProfessorName")}
+                  />
+                </AuthField>
+                <p className="mt-1 text-xs text-stone-400">
+                  They're not linked to this module yet — this helps staff spot when the listed
+                  coordinator isn't who's actually teaching.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

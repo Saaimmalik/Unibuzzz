@@ -104,7 +104,11 @@ export function useCourseTeachingRatings(courseId: string) {
 // even when pending/hidden, so they can see its status) and their helpful
 // votes, all under one query-key prefix so a realtime insert invalidates
 // everything together.
-export function useReviews(targetType: ReviewTargetType, targetId: string, sort: ReviewSort = "recent") {
+export function useReviews(
+  targetType: ReviewTargetType,
+  targetId: string,
+  sort: ReviewSort = "recent",
+) {
   const { appUser } = useAuth();
   const queryClient = useQueryClient();
   const baseKey = ["reviews", targetType, targetId] as const;
@@ -170,6 +174,7 @@ export function useReviews(targetType: ReviewTargetType, targetId: string, sort:
             workload_rating: ownNotVisible.workload_rating,
             teaching_rating: ownNotVisible.teaching_rating,
             taught_by_professor_id: ownNotVisible.taught_by_professor_id,
+            alternate_professor_name: ownNotVisible.alternate_professor_name,
             created_at: ownNotVisible.created_at,
             viewer_has_voted: false,
             is_own: true,
@@ -206,6 +211,7 @@ export function useCreateReview(targetType: ReviewTargetType, targetId: string) 
       workloadRating?: number | null;
       teachingRating?: number | null;
       taughtByProfessorId?: string | null;
+      alternateProfessorName?: string | null;
     }) =>
       createReview({
         universityId: appUser!.university_id,
