@@ -20,7 +20,7 @@ export type ListingCategory =
 export type ListingCondition = "new" | "like_new" | "good" | "fair" | "poor";
 export type ListingStatus = "active" | "sold" | "removed";
 export type ReviewTargetType = "professor" | "course";
-export type ReviewStatus = "pending" | "visible" | "hidden" | "removed";
+export type ReviewStatus = "visible" | "hidden" | "removed";
 export type ReviewReportReason =
   "harassment" | "personal_info" | "spam" | "off_topic" | "fake" | "other";
 export type EntitySubmissionType = "professor" | "course" | "community";

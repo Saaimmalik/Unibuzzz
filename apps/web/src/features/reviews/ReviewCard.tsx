@@ -8,7 +8,6 @@ import { StarRating } from "./StarRating";
 import { useRemoveOwnReview, useToggleReviewHelpful } from "./hooks";
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending review — only you can see this",
   hidden: "Hidden pending moderator review",
 };
 

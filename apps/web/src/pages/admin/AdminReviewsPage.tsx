@@ -29,7 +29,6 @@ function ReviewsTab() {
         className={adminSelectClasses}
       >
         <option value="">All statuses</option>
-        <option value="pending">Pending</option>
         <option value="visible">Visible</option>
         <option value="hidden">Hidden</option>
         <option value="removed">Removed</option>
@@ -59,7 +58,7 @@ function ReviewsTab() {
                     onClick={() => setPending({ id: review.id, status: "visible" })}
                     className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-50"
                   >
-                    Approve
+                    Restore
                   </button>
                 )}
                 {review.status !== "hidden" && (
@@ -69,6 +68,15 @@ function ReviewsTab() {
                     className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-50"
                   >
                     Hide
+                  </button>
+                )}
+                {review.status !== "removed" && (
+                  <button
+                    type="button"
+                    onClick={() => setPending({ id: review.id, status: "removed" })}
+                    className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-50"
+                  >
+                    Remove
                   </button>
                 )}
               </div>

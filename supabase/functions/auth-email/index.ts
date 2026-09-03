@@ -46,15 +46,23 @@ Deno.serve(async (req: Request) => {
   }
 
   const { user, email_data } = verified;
-  const { token, token_hash, redirect_to, email_action_type } = email_data;
+  const { token, token_hash, redirect_to, email_action_type, site_url } = email_data;
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const confirmUrl =
-    `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(token_hash)}` +
-    `&type=${encodeURIComponent(email_action_type)}&redirect_to=${encodeURIComponent(redirect_to ?? "")}`;
+  // Point the link at our own app page (redirect_to, e.g. /verify-email or
+  // /reset-password) with the token as a query param, rather than straight at
+  // Supabase's own GET /auth/v1/verify endpoint. That endpoint consumes the
+  // single-use token for whoever fetches it first — including automated link
+  // scanners (Microsoft Defender Safe Links etc., common on university mail),
+  // which burns the token before the real user ever clicks and produces a
+  // confusing "otp_expired" error. Routing through our SPA means the token is
+  // only consumed by an actual browser running our JS (supabase.auth.verifyOtp()
+  // on the landing page), which scanners don't execute.
+  const confirmUrl = new URL(redirect_to || site_url);
+  confirmUrl.searchParams.set("token_hash", token_hash);
+  confirmUrl.searchParams.set("type", email_action_type);
 
   const { subject, html } = renderAuthEmail(email_action_type, {
-    confirmUrl,
+    confirmUrl: confirmUrl.toString(),
     otp: token,
     email: user.email,
   });
