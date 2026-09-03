@@ -370,6 +370,19 @@ authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 
+[functions.auth-email]
+# Called by Supabase Auth's own "Send Email" hook, which authenticates via a
+# Standard Webhooks signature (SEND_EMAIL_HOOK_SECRET), not a Supabase JWT —
+# the gateway's default JWT check must be off or every hook call 401s before
+# reaching the function's own signature verification.
+verify_jwt = false
+
+[functions.send-app-email]
+# Called only by Postgres via pg_net (see trigger_transactional_email() in
+# 20260903030000_email_notifications.sql), which sends no Authorization
+# header — auth is a shared secret in x-internal-secret instead.
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

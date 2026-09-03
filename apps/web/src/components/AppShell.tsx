@@ -39,9 +39,16 @@ function navLinkClasses(isActive: boolean) {
     // with the md: tier active. Kept tight (px-1, 10px text) specifically
     // because six tabs (Feed/Communities/Marketplace/Reviews/Alerts/Profile)
     // need to fit without "Communities"/"Marketplace" pushing later tabs
-    // off-screen on a ~375-390px-wide phone.
-    "flex flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors",
-    "md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm",
+    // off-screen on a ~375-390px-wide phone. `flex-1` gives every tab equal
+    // width regardless of label length — without it, a longer label like
+    // "Marketplace" makes that tab's own box wider than "Alerts"'s, and
+    // even though justify-around's margins are technically equal, the
+    // uneven box widths make icons under short labels look bunched
+    // together relative to icons under long ones. `md:flex-initial`
+    // undoes this for the desktop sidebar, where items are a vertical
+    // list (flex-1 there would stretch each row to fill leftover height).
+    "flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors",
+    "md:flex-initial md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm",
     isActive
       ? "text-brand-ink bg-brand-yellow/20 md:bg-brand-yellow/15"
       : "text-stone-500 hover:text-brand-ink hover:bg-stone-100",
@@ -86,15 +93,6 @@ export function AppShell() {
             >
               <MessageCircle size={20} />
             </NavLink>
-            {isStaff && (
-              <NavLink
-                to="/admin"
-                className="rounded-full p-1.5 text-stone-500 hover:bg-brand-purple/10 hover:text-brand-purple"
-                aria-label="Admin mode"
-              >
-                <Shield size={20} />
-              </NavLink>
-            )}
           </div>
         </div>
 
@@ -116,10 +114,21 @@ export function AppShell() {
         </nav>
 
         <div className="border-t border-stone-200 pt-3">
-          <NavLink to="/profile" className="block rounded-lg px-2 py-1.5 hover:bg-stone-100">
-            <p className="truncate text-sm font-semibold">{appUser?.display_name ?? "…"}</p>
-            <p className="truncate text-xs text-stone-500">@{appUser?.username ?? ""}</p>
-          </NavLink>
+          <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-stone-100">
+            <NavLink to="/profile" className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{appUser?.display_name ?? "…"}</p>
+              <p className="truncate text-xs text-stone-500">@{appUser?.username ?? ""}</p>
+            </NavLink>
+            {isStaff && (
+              <NavLink
+                to="/admin"
+                className="shrink-0 rounded-full p-1.5 text-stone-500 hover:bg-brand-purple/10 hover:text-brand-purple"
+                aria-label="Admin mode"
+              >
+                <Shield size={18} />
+              </NavLink>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => void signOut()}
@@ -174,8 +183,10 @@ export function AppShell() {
         <Outlet />
       </main>
 
-      {/* Mobile bottom tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-stone-200 bg-white/95 px-1 py-2 backdrop-blur md:hidden">
+      {/* Mobile bottom tab bar. No justify-around — each tab is flex-1
+          (see navLinkClasses) so they're equal-width and evenly spaced
+          regardless of label length. */}
+      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-stone-200 bg-white/95 px-1 py-2 backdrop-blur md:hidden">
         {mobileNavItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
