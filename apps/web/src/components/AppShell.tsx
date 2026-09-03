@@ -47,8 +47,16 @@ function navLinkClasses(isActive: boolean) {
     // together relative to icons under long ones. `md:flex-initial`
     // undoes this for the desktop sidebar, where items are a vertical
     // list (flex-1 there would stretch each row to fill leftover height).
-    "flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors",
-    "md:flex-initial md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm",
+    // `min-w-0` matters just as much as flex-1: a flex item's default
+    // min-width is `auto`, which floors it at its content's intrinsic
+    // width — for an unbreakable word like "Marketplace"/"Communities"
+    // that floor is ~65px, so flex-grow's equal split never actually
+    // takes effect without this, and those two tabs stayed wider than
+    // the rest even after adding flex-1. The label itself gets `truncate`
+    // (see below) so it degrades to an ellipsis instead of overflowing
+    // once shrunk this far.
+    "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium transition-colors",
+    "md:min-w-fit md:flex-initial md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm",
     isActive
       ? "text-brand-ink bg-brand-yellow/20 md:bg-brand-yellow/15"
       : "text-stone-500 hover:text-brand-ink hover:bg-stone-100",
@@ -108,7 +116,7 @@ export function AppShell() {
                 <Icon size={20} strokeWidth={2} />
                 {to === "/notifications" && <NotificationBadge count={unreadCount} />}
               </span>
-              {label}
+              <span className="w-full truncate text-center">{label}</span>
             </NavLink>
           ))}
         </nav>
@@ -198,7 +206,7 @@ export function AppShell() {
               <Icon size={20} strokeWidth={2} />
               {to === "/notifications" && <NotificationBadge count={unreadCount} />}
             </span>
-            {label}
+            <span className="w-full truncate text-center">{label}</span>
           </NavLink>
         ))}
       </nav>
