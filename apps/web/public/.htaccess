@@ -1,0 +1,11 @@
+# Single-page app: any request that isn't a real file/directory (e.g.
+# /verify-email, /reset-password, /u/:username, /posts/:id — routes that only
+# exist client-side via React Router) must fall back to index.html, or a
+# direct/full-page navigation (email link, shared URL, bookmark, refresh)
+# 404s before the app ever loads.
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
