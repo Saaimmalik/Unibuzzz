@@ -7,21 +7,23 @@ import {
   createListing,
   fetchListingById,
   fetchListings,
+  incrementListingView,
   searchListings,
   startMarketplaceConversation,
   updateListingStatus,
+  type ListingSort,
 } from "./api";
 
 export const LISTINGS_QUERY_KEY = ["listings"] as const;
 export const listingQueryKey = (id: string) => ["listings", id] as const;
 
-export function useListings(category?: ListingCategory) {
+export function useListings(category?: ListingCategory, sort: ListingSort = "newest") {
   const queryClient = useQueryClient();
-  const queryKey = [...LISTINGS_QUERY_KEY, category ?? "all"];
+  const queryKey = [...LISTINGS_QUERY_KEY, category ?? "all", sort];
 
   const query = useQuery({
     queryKey,
-    queryFn: () => fetchListings({ category }),
+    queryFn: () => fetchListings({ category, sort }),
   });
 
   useEffect(() => {
@@ -106,4 +108,16 @@ export function useStartMarketplaceConversation() {
   return useMutation({
     mutationFn: (listingId: string) => startMarketplaceConversation(listingId),
   });
+}
+
+// Fire-and-forget view increment, same pattern/reasoning as usePostView in
+// features/feed/hooks.ts — best-effort, not a hard-guaranteed count.
+export function useListingView(listingId: string | undefined) {
+  useEffect(() => {
+    if (!listingId) return;
+    const key = `viewed-listing-${listingId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void incrementListingView(listingId).catch(() => {});
+  }, [listingId]);
 }

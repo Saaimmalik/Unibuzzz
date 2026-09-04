@@ -153,6 +153,8 @@ export interface Database {
           body: string;
           like_count: number;
           comment_count: number;
+          view_count: number;
+          trending_score: number;
           is_anonymous: boolean;
           created_at: string;
           deleted_at: string | null;
@@ -165,6 +167,8 @@ export interface Database {
           body: string;
           like_count?: number;
           comment_count?: number;
+          view_count?: number;
+          trending_score?: number;
           is_anonymous?: boolean;
           created_at?: string;
           deleted_at?: string | null;
@@ -451,6 +455,9 @@ export interface Database {
           category: ListingCategory;
           condition: ListingCondition;
           status: ListingStatus;
+          view_count: number;
+          inquiry_count: number;
+          trending_score: number;
           created_at: string;
         };
         Insert: {
@@ -463,6 +470,9 @@ export interface Database {
           category: ListingCategory;
           condition: ListingCondition;
           status?: ListingStatus;
+          view_count?: number;
+          inquiry_count?: number;
+          trending_score?: number;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["listings"]["Insert"]>;
@@ -937,6 +947,14 @@ export interface Database {
       start_marketplace_conversation: {
         Args: { p_listing_id: string };
         Returns: string;
+      };
+      increment_post_view: {
+        Args: { p_post_id: string };
+        Returns: void;
+      };
+      increment_listing_view: {
+        Args: { p_listing_id: string };
+        Returns: void;
       };
       is_username_available: {
         Args: { p_username: string };

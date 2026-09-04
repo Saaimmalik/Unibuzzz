@@ -4,28 +4,37 @@ import { PostCard } from "../features/feed/PostCard";
 import { PostComposer } from "../features/feed/PostComposer";
 import {
   FOLLOWING_POSTS_QUERY_KEY,
+  TRENDING_POSTS_QUERY_KEY,
   feedSearchQueryKey,
   useFeedPostSearch,
   useFollowingPostsFeed,
   usePostsFeed,
+  useTrendingPostsFeed,
 } from "../features/feed/hooks";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 
 export function HomePage() {
-  const [tab, setTab] = useState<"forYou" | "following">("forYou");
+  const [tab, setTab] = useState<"forYou" | "following" | "trending">("forYou");
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
   const isSearching = debouncedQuery.trim().length >= 2;
 
   const forYouQuery = usePostsFeed();
   const followingQuery = useFollowingPostsFeed();
+  const trendingQuery = useTrendingPostsFeed();
   const searchQuery = useFeedPostSearch(debouncedQuery);
 
   const {
     data: posts,
     isLoading,
     isError,
-  } = isSearching ? searchQuery : tab === "forYou" ? forYouQuery : followingQuery;
+  } = isSearching
+    ? searchQuery
+    : tab === "forYou"
+      ? forYouQuery
+      : tab === "following"
+        ? followingQuery
+        : trendingQuery;
 
   return (
     <div className="mx-auto max-w-xl space-y-4 px-4 py-6">
@@ -44,6 +53,13 @@ export function HomePage() {
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${tab === "following" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
           >
             Following
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("trending")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${tab === "trending" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
+          >
+            Trending
           </button>
         </div>
       )}
@@ -91,6 +107,11 @@ export function HomePage() {
           started.
         </p>
       )}
+      {!isLoading && posts && posts.length === 0 && !isSearching && tab === "trending" && (
+        <p className="py-8 text-center text-sm text-stone-400">
+          Nothing trending yet — trending posts need some likes and comments first.
+        </p>
+      )}
 
       {posts?.map((post) => (
         <PostCard
@@ -101,7 +122,9 @@ export function HomePage() {
               ? feedSearchQueryKey(debouncedQuery)
               : tab === "forYou"
                 ? undefined
-                : FOLLOWING_POSTS_QUERY_KEY
+                : tab === "following"
+                  ? FOLLOWING_POSTS_QUERY_KEY
+                  : TRENDING_POSTS_QUERY_KEY
           }
         />
       ))}

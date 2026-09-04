@@ -158,6 +158,12 @@ export function ReviewsPage() {
             {entityType === "professor"
               ? mostReviewedProfessors.data?.map((p) => <ProfessorRow key={p.id} professor={p} />)
               : mostReviewedCourses.data?.map((c) => <CourseRow key={c.id} course={c} />)}
+            {entityType === "professor" && mostReviewedProfessors.data?.length === 0 && (
+              <p className="text-sm text-stone-400">No reviewed professors yet.</p>
+            )}
+            {entityType === "course" && mostReviewedCourses.data?.length === 0 && (
+              <p className="text-sm text-stone-400">No reviewed courses yet.</p>
+            )}
           </section>
         </>
       )}

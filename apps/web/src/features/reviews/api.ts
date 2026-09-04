@@ -21,11 +21,18 @@ const REVIEW_PUBLIC_SELECT =
 export type ReviewRow = Omit<Review, "reviewer_id">;
 export type ReviewSort = "recent" | "highest_rated" | "most_helpful";
 
+// .gt(...) matters here, not just cosmetics: without it these rails would
+// backfill with arbitrary zero-review rows (Postgres's unspecified tie order
+// over review_count/trending_score = 0) up to `limit` any time fewer than
+// `limit` entities actually have a review — which, pre-launch, is most of
+// the time. That reads as "trending/most-reviewed isn't showing the actual
+// leaders" even though the ordering itself is correct.
 export async function fetchTrendingProfessors(limit = 10): Promise<Professor[]> {
   const { data, error } = await supabase
     .from("professors")
     .select("*")
     .is("merged_into_id", null)
+    .gt("trending_score", 0)
     .order("trending_score", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -37,6 +44,7 @@ export async function fetchMostReviewedProfessors(limit = 10): Promise<Professor
     .from("professors")
     .select("*")
     .is("merged_into_id", null)
+    .gt("review_count", 0)
     .order("review_count", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -48,6 +56,7 @@ export async function fetchTrendingCourses(limit = 10): Promise<Course[]> {
     .from("courses")
     .select("*")
     .is("merged_into_id", null)
+    .gt("trending_score", 0)
     .order("trending_score", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -59,6 +68,7 @@ export async function fetchMostReviewedCourses(limit = 10): Promise<Course[]> {
     .from("courses")
     .select("*")
     .is("merged_into_id", null)
+    .gt("review_count", 0)
     .order("review_count", { ascending: false })
     .limit(limit);
   if (error) throw error;

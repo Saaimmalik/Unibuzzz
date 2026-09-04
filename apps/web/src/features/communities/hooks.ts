@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { communityPostsQueryKey, createPost, fetchCommunityPosts } from "../feed/api";
+import {
+  communityPostsQueryKey,
+  createPost,
+  fetchCommunityPosts,
+  type CommunityPostSort,
+} from "../feed/api";
 import { useAuth } from "../../lib/auth-context";
 import { supabase } from "../../lib/supabase";
 import {
@@ -75,14 +80,14 @@ export function useLeaveCommunity(slug: string) {
   });
 }
 
-export function useCommunityPosts(communityId: string) {
+export function useCommunityPosts(communityId: string, sort: CommunityPostSort = "hot") {
   const { appUser } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = communityPostsQueryKey(communityId);
+  const queryKey = communityPostsQueryKey(communityId, sort);
 
   const query = useQuery({
     queryKey,
-    queryFn: () => fetchCommunityPosts(communityId, appUser!.id),
+    queryFn: () => fetchCommunityPosts(communityId, appUser!.id, sort),
     enabled: !!appUser && !!communityId,
   });
 
@@ -90,7 +95,7 @@ export function useCommunityPosts(communityId: string) {
     if (!appUser) return;
 
     const channel = supabase
-      .channel(`community-posts-${communityId}`)
+      .channel(`community-posts-${communityId}-${sort}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "posts", filter: `community_id=eq.${communityId}` },
@@ -99,7 +104,7 @@ export function useCommunityPosts(communityId: string) {
       .subscribe();
 
     return () => void supabase.removeChannel(channel);
-  }, [appUser, communityId, queryClient, queryKey]);
+  }, [appUser, communityId, queryClient, queryKey, sort]);
 
   return query;
 }
@@ -118,7 +123,10 @@ export function useCreateCommunityPost(communityId: string) {
         image: input.image,
         isAnonymous: input.isAnonymous,
       }),
+    // Invalidates by the shared ["posts","community",communityId] prefix
+    // (not a specific sort's full key) so both the "hot" and "new" sort
+    // caches refetch, regardless of which one the poster is currently on.
     onSuccess: () =>
-      void queryClient.invalidateQueries({ queryKey: communityPostsQueryKey(communityId) }),
+      void queryClient.invalidateQueries({ queryKey: ["posts", "community", communityId] }),
   });
 }

@@ -7,6 +7,7 @@ import { useAuth } from "../lib/auth-context";
 import { ReportDialog } from "../features/reports/ReportDialog";
 import {
   useListing,
+  useListingView,
   useStartMarketplaceConversation,
   useUpdateListingStatus,
 } from "../features/marketplace/hooks";
@@ -28,6 +29,7 @@ export function ListingPage() {
   const { appUser } = useAuth();
   const navigate = useNavigate();
   const { data: listing, isLoading } = useListing(id ?? "");
+  useListingView(id);
   const updateStatus = useUpdateListingStatus(id ?? "");
   const startConversation = useStartMarketplaceConversation();
   const [activeImage, setActiveImage] = useState(0);

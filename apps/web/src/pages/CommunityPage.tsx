@@ -20,10 +20,11 @@ export function CommunityPage() {
   const join = useJoinCommunity(slug ?? "");
   const leave = useLeaveCommunity(slug ?? "");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"hot" | "new">("hot");
   const debouncedQuery = useDebouncedValue(query, 300);
   const isSearching = debouncedQuery.trim().length >= 2;
 
-  const feedQuery = useCommunityPosts(community?.id ?? "");
+  const feedQuery = useCommunityPosts(community?.id ?? "", sort);
   const searchQuery = useCommunityPostSearch(community?.id ?? "", debouncedQuery);
   const { data: posts, isLoading: postsLoading } = isSearching ? searchQuery : feedQuery;
 
@@ -108,6 +109,25 @@ export function CommunityPage() {
         <p className="text-center text-sm text-stone-400">Join this community to post in it.</p>
       )}
 
+      {!isSearching && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setSort("hot")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${sort === "hot" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
+          >
+            Hot
+          </button>
+          <button
+            type="button"
+            onClick={() => setSort("new")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${sort === "new" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
+          >
+            New
+          </button>
+        </div>
+      )}
+
       {isSearching && query.trim().length < 2 && (
         <p className="py-8 text-center text-sm text-stone-400">
           Keep typing — search needs 2+ characters.
@@ -129,7 +149,7 @@ export function CommunityPage() {
           queryKey={
             isSearching
               ? communitySearchQueryKey(community.id, debouncedQuery)
-              : communityPostsQueryKey(community.id)
+              : communityPostsQueryKey(community.id, sort)
           }
           mode="vote"
         />

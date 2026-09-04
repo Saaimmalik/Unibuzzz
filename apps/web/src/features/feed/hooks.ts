@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { fetchFollowingIds } from "../follows/api";
 import {
   POSTS_QUERY_KEY,
+  TRENDING_POSTS_QUERY_KEY,
   clearReaction,
   commentsQueryKey,
   createComment,
@@ -14,12 +15,16 @@ import {
   fetchFollowingPosts,
   fetchPostById,
   fetchPosts,
+  fetchTrendingPosts,
+  incrementPostView,
   searchCommunityPosts,
   searchFeedPosts,
   setReaction,
   softDeletePost,
   type FeedPost,
 } from "./api";
+
+export { TRENDING_POSTS_QUERY_KEY };
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 
@@ -104,6 +109,30 @@ export function useFollowingPostsFeed() {
   }, [appUser, queryClient]);
 
   return query;
+}
+
+export function useTrendingPostsFeed() {
+  const { appUser } = useAuth();
+
+  return useQuery({
+    queryKey: TRENDING_POSTS_QUERY_KEY,
+    queryFn: () => fetchTrendingPosts(appUser!.id),
+    enabled: !!appUser,
+  });
+}
+
+// Fire-and-forget view increment, called once per post-detail-page visit.
+// Best-effort only (errors are swallowed) — a missed view count isn't worth
+// surfacing to the user or retrying, see the comment on increment_post_view
+// in the migration for why this isn't a hard-guaranteed count.
+export function usePostView(postId: string | undefined) {
+  useEffect(() => {
+    if (!postId) return;
+    const key = `viewed-post-${postId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void incrementPostView(postId).catch(() => {});
+  }, [postId]);
 }
 
 export const feedSearchQueryKey = (query: string) =>

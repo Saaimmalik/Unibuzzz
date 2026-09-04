@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
 import { PostCard } from "../features/feed/PostCard";
-import { postQueryKey, usePost } from "../features/feed/hooks";
+import { postQueryKey, usePost, usePostView } from "../features/feed/hooks";
 
 export function PostPage() {
   const { postId } = useParams<{ postId: string }>();
   const { data: post, isLoading, isError } = usePost(postId!);
+  usePostView(postId);
 
   return (
     <div className="mx-auto max-w-xl space-y-4 px-4 py-6">

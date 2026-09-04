@@ -36,6 +36,7 @@ export function MarketplacePage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"browse" | "mine">("browse");
   const [category, setCategory] = useState<string | undefined>(undefined);
+  const [sort, setSort] = useState<"newest" | "trending">("newest");
   const [isCreating, setIsCreating] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -45,7 +46,10 @@ export function MarketplacePage() {
   const debouncedQuery = useDebouncedValue(query, 300);
   const isSearching = tab === "browse" && debouncedQuery.trim().length >= 2;
 
-  const browseQuery = useListings(category as CreateListingInput["category"] | undefined);
+  const browseQuery = useListings(
+    category as CreateListingInput["category"] | undefined,
+    sort,
+  );
   const mineQuery = useMyListings();
   const searchQuery = useListingSearch(debouncedQuery);
   const { data: listings, isLoading } = isSearching
@@ -237,25 +241,44 @@ export function MarketplacePage() {
           </div>
 
           {!isSearching && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setCategory(undefined)}
-                className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
-              >
-                All
-              </button>
-              {LISTING_CATEGORIES.map((c) => (
+            <>
+              <div className="flex gap-2">
                 <button
-                  key={c}
                   type="button"
-                  onClick={() => setCategory(c)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+                  onClick={() => setSort("newest")}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${sort === "newest" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
                 >
-                  {CATEGORY_LABELS[c]}
+                  Newest
                 </button>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setSort("trending")}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${sort === "trending" ? "bg-brand-ink text-white" : "text-stone-500 hover:bg-stone-100"}`}
+                >
+                  Trending
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCategory(undefined)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${!category ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+                >
+                  All
+                </button>
+                {LISTING_CATEGORIES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCategory(c)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${category === c ? "bg-brand-yellow text-black" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+                  >
+                    {CATEGORY_LABELS[c]}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </>
       )}
@@ -273,7 +296,9 @@ export function MarketplacePage() {
             ? "No listings match that search."
             : tab === "mine"
               ? "You haven't listed anything yet."
-              : "No listings yet — be the first to sell something 🐝"}
+              : sort === "trending"
+                ? "Nothing trending yet — trending needs some buyer interest first."
+                : "No listings yet — be the first to sell something 🐝"}
         </p>
       )}
 

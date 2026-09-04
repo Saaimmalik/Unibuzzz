@@ -10,9 +10,12 @@ import { supabase } from "../../lib/supabase";
 import { getSignedUrls, uploadPostImage } from "./storage";
 
 export const POSTS_QUERY_KEY = ["posts"] as const;
-export const communityPostsQueryKey = (communityId: string) =>
-  ["posts", "community", communityId] as const;
+export const TRENDING_POSTS_QUERY_KEY = ["posts", "trending"] as const;
+export const communityPostsQueryKey = (communityId: string, sort: CommunityPostSort = "hot") =>
+  ["posts", "community", communityId, sort] as const;
 export const commentsQueryKey = (postId: string) => ["comments", postId] as const;
+
+export type CommunityPostSort = "hot" | "new";
 
 export type PostMediaWithUrl = PostMedia & { signedUrl: string | null };
 export type FeedPost = Omit<PostWithAuthor, "post_media"> & { post_media: PostMediaWithUrl[] };
@@ -136,19 +139,47 @@ export async function fetchFollowingPosts(
   return hydratePosts(posts ?? [], viewerId);
 }
 
-export async function fetchCommunityPosts(
-  communityId: string,
-  viewerId: string,
-): Promise<FeedPost[]> {
+// Trending is scoped to main-feed posts only (community_id null), same
+// scope as the existing For You/Following tabs — a shared trending_score
+// column/formula (see 20260904030000_posts_trending.sql) powers both this
+// and fetchCommunityPosts' "hot" sort below.
+export async function fetchTrendingPosts(viewerId: string): Promise<FeedPost[]> {
   const { data: posts, error } = await supabase
     .from("posts")
     .select(POST_SELECT)
     .is("deleted_at", null)
-    .eq("community_id", communityId)
-    .order("created_at", { ascending: false })
+    .is("community_id", null)
+    .gt("trending_score", 0)
+    .order("trending_score", { ascending: false })
     .limit(30);
   if (error) throw error;
   return hydratePosts(posts ?? [], viewerId);
+}
+
+export async function fetchCommunityPosts(
+  communityId: string,
+  viewerId: string,
+  sort: CommunityPostSort = "hot",
+): Promise<FeedPost[]> {
+  let query = supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .is("deleted_at", null)
+    .eq("community_id", communityId);
+
+  query =
+    sort === "hot"
+      ? query.order("trending_score", { ascending: false })
+      : query.order("created_at", { ascending: false });
+
+  const { data: posts, error } = await query.limit(30);
+  if (error) throw error;
+  return hydratePosts(posts ?? [], viewerId);
+}
+
+export async function incrementPostView(postId: string): Promise<void> {
+  const { error } = await supabase.rpc("increment_post_view", { p_post_id: postId });
+  if (error) throw error;
 }
 
 export async function searchPosts(query: string, viewerId: string): Promise<FeedPost[]> {

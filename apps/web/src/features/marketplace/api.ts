@@ -28,14 +28,14 @@ async function hydrateListings(raw: RawListing[]): Promise<ListingWithSeller[]> 
   }));
 }
 
+export type ListingSort = "newest" | "trending";
+
 export async function fetchListings(filters: {
   category?: ListingCategory;
   sellerId?: string;
+  sort?: ListingSort;
 }): Promise<ListingWithSeller[]> {
-  let query = supabase
-    .from("listings")
-    .select(LISTING_SELECT)
-    .order("created_at", { ascending: false });
+  let query = supabase.from("listings").select(LISTING_SELECT);
 
   // Browsing (no sellerId) only ever shows active listings. "My listings"
   // (sellerId set) is a management view, so it should show sold/removed
@@ -46,6 +46,11 @@ export async function fetchListings(filters: {
     query = query.eq("status", "active");
   }
   if (filters.category) query = query.eq("category", filters.category);
+
+  query =
+    filters.sort === "trending"
+      ? query.gt("trending_score", 0).order("trending_score", { ascending: false })
+      : query.order("created_at", { ascending: false });
 
   const { data, error } = await query.limit(60);
   if (error) throw error;
@@ -132,4 +137,9 @@ export async function startMarketplaceConversation(listingId: string): Promise<s
   });
   if (error) throw error;
   return data;
+}
+
+export async function incrementListingView(listingId: string): Promise<void> {
+  const { error } = await supabase.rpc("increment_listing_view", { p_listing_id: listingId });
+  if (error) throw error;
 }
