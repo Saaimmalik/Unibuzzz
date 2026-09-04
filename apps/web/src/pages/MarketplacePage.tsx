@@ -46,10 +46,7 @@ export function MarketplacePage() {
   const debouncedQuery = useDebouncedValue(query, 300);
   const isSearching = tab === "browse" && debouncedQuery.trim().length >= 2;
 
-  const browseQuery = useListings(
-    category as CreateListingInput["category"] | undefined,
-    sort,
-  );
+  const browseQuery = useListings(category as CreateListingInput["category"] | undefined, sort);
   const mineQuery = useMyListings();
   const searchQuery = useListingSearch(debouncedQuery);
   const { data: listings, isLoading } = isSearching
